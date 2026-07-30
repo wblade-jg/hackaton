@@ -21,4 +21,6 @@ public class ArchivoControl
     public int Procesados { get; set; }
 
     public int Rechazados { get; set; }
+
+    public List<Transaccion> Transacciones { get; set; } = [];
 }
