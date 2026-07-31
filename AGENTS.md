@@ -44,6 +44,9 @@ Decisions agreed during the impeccable critiques (used to drive reviews and fixe
 
 ## Commit History
 - `20ba210` **feat: frontend scaffold for financial batch transaction processing** - Initial commit: Vite + React 19 + MUI project with vertical-slice architecture (files/transactions), mock API (`VITE_USE_MOCK`), MUI theme, routing, and the UX fixes from the impeccable critiques
+- `5d88956` **docs: record git commit conventions and history in AGENTS.md** - Added Conventional Commits rules, English-only commit messages, and initial commit history
+- `bf6fd10` **style: bold labels in transaction modals and dialogs** - Added bold labels (RejectReasonModal, EditAmountModal, AvailableFiles dialogs) and fixed missing prop-types
+- `0be25d6` **style: bold result counters in process dialog** - Bolded Procesadas/Rechazadas captions in the process result dialog
 
 ## Iteration Log (impeccable critiques → fixes)
 - **ProcessedFiles critique → fixed:** showed only a 7-column literal table with wrong statuses. Now shows the real derived file status, a 4-column table with a proportion bar (processed vs rejected), search + sort, and an inline error banner that keeps the table visible
