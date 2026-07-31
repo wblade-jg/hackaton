@@ -91,7 +91,13 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
       </DialogTitle>
 
       <DialogContent dividers>
-        <Box display="flex" flexDirection="column" gap={2.5}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2.5,
+          }}
+        >
           <Box
             sx={{
               p: 2,
@@ -148,16 +154,16 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
             fullWidth
             autoFocus
             slotProps={{
+              input: {
+                startAdornment: (
+                  <Typography variant="body1" sx={{ mr: 0.5, color: 'text.secondary' }}>
+                    $
+                  </Typography>
+                ),
+              },
               htmlInput: {
                 'aria-label': 'Monto de la transacción',
               },
-            }}
-            InputProps={{
-              startAdornment: (
-                <Typography variant="body1" sx={{ mr: 0.5, color: 'text.secondary' }}>
-                  $
-                </Typography>
-              ),
             }}
           />
         </Box>

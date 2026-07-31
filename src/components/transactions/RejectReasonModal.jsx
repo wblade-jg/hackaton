@@ -24,7 +24,16 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
       fullWidth
       aria-labelledby="rejection-reason-title"
     >
-      <DialogTitle id="rejection-reason-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <DialogTitle
+        id="rejection-reason-title"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          fontWeight: 600,
+          fontSize: '1.125rem',
+        }}
+      >
         <Box
           sx={{
             width: 40,
@@ -38,14 +47,24 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
         >
           <ErrorOutlineIcon color="error" />
         </Box>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-          Detalles del Rechazo
-        </Typography>
+        Detalles del Rechazo
       </DialogTitle>
 
       <DialogContent dividers>
-        <Box display="flex" flexDirection="column" gap={2}>
-          <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <Typography variant="label" color="text.secondary">
               Estado
             </Typography>

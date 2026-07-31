@@ -54,8 +54,8 @@ function ResultLine({ total, processed, rejected }) {
         aria-label={`${processed} de ${total} transacciones procesadas, ${rejected} rechazadas`}
         sx={{ position: 'relative', display: 'flex', height: 8, borderRadius: 2, overflow: 'hidden', backgroundColor: 'divider' }}
       >
-        <Box sx={{ width: `${processedPct}%`, backgroundColor: 'success.main', transition: 'width 0.25s ease-out' }} />
-        <Box sx={{ width: `${rejectedPct}%`, backgroundColor: 'error.main', transition: 'width 0.25s ease-out' }} />
+        <Box sx={{ width: `${processedPct}%`, backgroundColor: 'success.main' }} />
+        <Box sx={{ width: `${rejectedPct}%`, backgroundColor: 'error.main' }} />
         {showRing && (
           <Box
             aria-hidden="true"
@@ -313,13 +313,17 @@ export default function ProcessedFiles() {
               size="small"
               fullWidth
               sx={{ maxWidth: 340 }}
-              aria-label="Buscar archivos procesados"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                htmlInput: {
+                  'aria-label': 'Buscar archivos procesados',
+                },
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           </Box>

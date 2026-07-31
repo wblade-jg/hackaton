@@ -5,13 +5,15 @@ import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlineOutlined';
 export default function ErrorState({ message = 'Algo salió mal', onRetry }) {
   return (
     <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      minHeight="calc(100vh - 220px)"
-      px={3}
-      textAlign="center"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 'calc(100vh - 220px)',
+        px: 3,
+        textAlign: 'center',
+      }}
       role="alert"
     >
       <Box

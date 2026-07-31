@@ -166,7 +166,14 @@ export default function TransactionList() {
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3 } }}>
-      <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          mb: 2,
+        }}
+      >
         <IconButton
           onClick={() => navigate('/processed')}
           aria-label="Volver a archivos procesados"
@@ -239,13 +246,17 @@ export default function TransactionList() {
                 placeholder="Buscar por número de cuenta..."
                 size="small"
                 sx={{ flex: 1, minWidth: 220, maxWidth: 380 }}
-                aria-label="Buscar transacciones por cuenta"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
+                slotProps={{
+                  htmlInput: {
+                    'aria-label': 'Buscar transacciones por cuenta',
+                  },
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  },
                 }}
               />
               <FormControl size="small" sx={{ minWidth: 180 }}>
@@ -335,7 +346,13 @@ export default function TransactionList() {
                             <StatusBadge status={tx.status} />
                           </TableCell>
                           <TableCell align="right">
-                            <Box display="flex" justifyContent="flex-end" gap={0.5}>
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                gap: 0.5,
+                              }}
+                            >
                               {tx.status === 'REJECTED' && tx.rejectionReason && (
                                 <Tooltip title="Ver motivo de rechazo" arrow>
                                   <IconButton

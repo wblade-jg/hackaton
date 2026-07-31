@@ -204,7 +204,7 @@ let theme = createTheme({
           color: '#FFFFFF',
         },
         colorSuccess: {
-          backgroundColor: '#1F8A4C',
+          backgroundColor: '#177D42',
           color: '#FFFFFF',
         },
         colorPrimary: {

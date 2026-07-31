@@ -4,13 +4,16 @@ import PropTypes from 'prop-types';
 export default function PageHeader({ title, subtitle, action }) {
   return (
     <Box
-      display="flex"
-      alignItems="flex-start"
-      justifyContent="space-between"
-      gap={2}
-      mb={3}
-      flexWrap="wrap"
-      sx={{ pl: { xs: 2, sm: 3 }, pr: { xs: 2, sm: 3 } }}
+      sx={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        gap: 2,
+        mb: 3,
+        flexWrap: 'wrap',
+        pl: { xs: 2, sm: 3 },
+        pr: { xs: 2, sm: 3 },
+      }}
     >
       <Box sx={{ minWidth: 0 }}>
         <Typography variant="h4" gutterBottom>

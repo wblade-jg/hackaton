@@ -194,64 +194,68 @@ export default function AppLayout() {
       )}
 
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <AppBar
-          position="sticky"
-          color="default"
-          elevation={0}
-          sx={{
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            backgroundColor: 'background.paper',
-          }}
-        >
-          <Toolbar sx={{ gap: 1 }}>
-            {isMobile && (
-              <IconButton
-                edge="start"
-                onClick={() => setMobileOpen(true)}
-                sx={{ mr: 1 }}
-                aria-label="Abrir menú de navegación"
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
-            <Breadcrumbs
-              separator={
-                <NavigateNextIcon sx={{ fontSize: 16, color: 'text.disabled' }} fontSize="small" />
-              }
-              aria-label="Ruta de navegación"
-            >
-              {breadcrumbs.map((crumb, index) => {
-                const isLast = index === breadcrumbs.length - 1;
-                if (isLast || !crumb.path) {
-                  return (
-                    <Typography
-                      key={crumb.label}
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontWeight: 600 }}
-                    >
-                      {crumb.label}
-                    </Typography>
-                  );
-                }
-                return (
-                  <MuiLink
-                    key={crumb.label}
-                    component={Link}
-                    to={crumb.path}
-                    underline="hover"
-                    color="text.primary"
-                    variant="body2"
-                    sx={{ fontWeight: 500 }}
-                  >
-                    {crumb.label}
-                  </MuiLink>
-                );
-              })}
-            </Breadcrumbs>
-          </Toolbar>
-        </AppBar>
+        {(isMobile || breadcrumbs.length > 1) && (
+          <AppBar
+            position="sticky"
+            color="default"
+            elevation={0}
+            sx={{
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+              backgroundColor: 'background.paper',
+            }}
+          >
+            <Toolbar sx={{ gap: 1 }}>
+              {isMobile && (
+                <IconButton
+                  edge="start"
+                  onClick={() => setMobileOpen(true)}
+                  sx={{ mr: 1 }}
+                  aria-label="Abrir menú de navegación"
+                >
+                  <MenuIcon />
+                </IconButton>
+              )}
+              {breadcrumbs.length > 1 && (
+                <Breadcrumbs
+                  separator={
+                    <NavigateNextIcon sx={{ fontSize: 16, color: 'text.disabled' }} fontSize="small" />
+                  }
+                  aria-label="Ruta de navegación"
+                >
+                  {breadcrumbs.map((crumb, index) => {
+                    const isLast = index === breadcrumbs.length - 1;
+                    if (isLast || !crumb.path) {
+                      return (
+                        <Typography
+                          key={crumb.label}
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontWeight: 600 }}
+                        >
+                          {crumb.label}
+                        </Typography>
+                      );
+                    }
+                    return (
+                      <MuiLink
+                        key={crumb.label}
+                        component={Link}
+                        to={crumb.path}
+                        underline="hover"
+                        color="text.primary"
+                        variant="body2"
+                        sx={{ fontWeight: 500 }}
+                      >
+                        {crumb.label}
+                      </MuiLink>
+                    );
+                  })}
+                </Breadcrumbs>
+              )}
+            </Toolbar>
+          </AppBar>
+        )}
 
         <Box
           component="main"

@@ -39,7 +39,13 @@ import PageHeader from '../common/PageHeader';
 
 function ResultStations({ processed, rejected }) {
   return (
-    <Box display="flex" flexWrap="wrap" alignItems="stretch">
+    <Box
+      sx={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'stretch',
+      }}
+    >
       <Box
         sx={{
           flex: 1,
@@ -270,13 +276,17 @@ export default function AvailableFiles() {
               size="small"
               fullWidth
               sx={{ maxWidth: 340 }}
-              aria-label="Buscar archivos disponibles"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
+              slotProps={{
+                htmlInput: {
+                  'aria-label': 'Buscar archivos disponibles',
+                },
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon fontSize="small" />
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           </Box>
@@ -362,7 +372,13 @@ export default function AvailableFiles() {
             procesados.
           </Alert>
           {confirmFile && (
-            <Box display="flex" flexDirection="column" gap={1.5}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 1.5,
+              }}
+            >
               <Box>
                 <Typography variant="label" color="text.secondary" gutterBottom>
                   Archivo
@@ -407,20 +423,30 @@ export default function AvailableFiles() {
       >
         <DialogTitle
           id="result-title"
-          sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            fontWeight: 600,
+            fontSize: '1.125rem',
+          }}
         >
           {result && result.rejected > 0 ? (
             <ReportProblemIcon sx={{ color: 'warning.dark' }} />
           ) : (
             <CheckCircleIcon color="success" />
           )}
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            {result && result.rejected > 0 ? 'Archivo procesado con observaciones' : 'Archivo procesado'}
-          </Typography>
+          {result && result.rejected > 0 ? 'Archivo procesado con observaciones' : 'Archivo procesado'}
         </DialogTitle>
         <DialogContent dividers>
           {result && (
-            <Box display="flex" flexDirection="column" gap={2}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+              }}
+            >
               <Typography variant="body2" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
                 {result.filename}
               </Typography>

@@ -5,13 +5,15 @@ import InboxIcon from '@mui/icons-material/InboxOutlined';
 export default function EmptyState({ icon, title, description, action }) {
   return (
     <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      minHeight="calc(100vh - 220px)"
-      px={3}
-      textAlign="center"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 'calc(100vh - 220px)',
+        px: 3,
+        textAlign: 'center',
+      }}
       role="status"
       aria-label={title}
     >
@@ -46,7 +48,7 @@ export default function EmptyState({ icon, title, description, action }) {
           {description}
         </Typography>
       )}
-      {action && <Box mt={1}>{action}</Box>}
+      {action && <Box sx={{ mt: 1 }}>{action}</Box>}
     </Box>
   );
 }
