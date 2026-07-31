@@ -18,7 +18,8 @@ public partial class FileScanner : IFileScanner
     public IEnumerable<FileEntry> GetMatchingFiles()
     {
         if (!Directory.Exists(_inputDirectory))
-            return [];
+            throw new DirectoryNotFoundException(
+                $"El directorio de entrada '{_inputDirectory}' no existe.");
 
         return Directory
             .EnumerateFiles(_inputDirectory)

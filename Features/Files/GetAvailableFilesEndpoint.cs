@@ -1,7 +1,6 @@
 using hackaton.Common;
 using hackaton.Infrastructure.FileSystem;
 using hackaton.Infrastructure.Persistence;
-using hackaton.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace hackaton.Features.Files;
@@ -17,9 +16,20 @@ public class GetAvailableFilesEndpoint : IEndpoint
         IFileScanner scanner,
         AppDbContext db)
     {
-        var onDisk = scanner.GetMatchingFiles().ToList();
+        List<FileEntry> onDisk;
+        try
+        {
+            onDisk = scanner.GetMatchingFiles().ToList();
+        }
+        catch (DirectoryNotFoundException ex)
+        {
+            return Results.Problem(
+                title: "Error de configuración",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
+
         var processed = await db.ArchivosProcesados
-            .Where(a => a.Estado == ArchivoEstado.PROCESADO || a.Estado == ArchivoEstado.CON_ERRORES)
             .Select(a => a.NombreArchivo)
             .ToHashSetAsync();
 
