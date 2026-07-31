@@ -38,8 +38,12 @@ Decisions agreed during the impeccable critiques (used to drive reviews and fixe
 
 ## Git & Commit Conventions
 - **Conventional Commits** for every change: `feat:`, `fix:`, `refactor:`, `docs:`, `style:`, `test:`, `chore:`, `perf:`, `build:`, `ci:` — always a concise imperative summary in the subject
+- **Commit messages must be written in English** (UI and docs are in Spanish, but commits are in English)
 - Only commit when the user asks; stage only intended files
 - `.gitignore` already excludes `node_modules` and `dist`; do not commit secrets or env files
+
+## Commit History
+- `20ba210` **feat: frontend scaffold for financial batch transaction processing** - Initial commit: Vite + React 19 + MUI project with vertical-slice architecture (files/transactions), mock API (`VITE_USE_MOCK`), MUI theme, routing, and the UX fixes from the impeccable critiques
 
 ## Iteration Log (impeccable critiques → fixes)
 - **ProcessedFiles critique → fixed:** showed only a 7-column literal table with wrong statuses. Now shows the real derived file status, a 4-column table with a proportion bar (processed vs rejected), search + sort, and an inline error banner that keeps the table visible
