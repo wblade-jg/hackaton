@@ -22,7 +22,7 @@ public partial class FileScanner : IFileScanner
                 $"El directorio de entrada '{_inputDirectory}' no existe.");
 
         return Directory
-            .EnumerateFiles(_inputDirectory)
+            .EnumerateFiles(_inputDirectory, "*.csv")
             .Select(Path.GetFileName)
             .Select(name => name is not null ? TryParseFileEntry(name) : null)
             .Where(entry => entry is not null)

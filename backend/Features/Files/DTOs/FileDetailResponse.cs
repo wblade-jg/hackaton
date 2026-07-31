@@ -11,6 +11,8 @@ public record FileDetailResponse(
     List<TransaccionDetailResponse> Transacciones,
     string? NextCursor,
     bool HasNextPage,
+    int CurrentPage,
+    int TotalPages,
     int PageSize);
 
 public record TransaccionDetailResponse(

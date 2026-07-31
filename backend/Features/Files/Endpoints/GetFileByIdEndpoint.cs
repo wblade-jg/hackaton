@@ -18,23 +18,38 @@ public class GetFileByIdEndpoint : IEndpoint
         app.MapGet("/files/{id:int}", HandleAsync)
            .WithTags("Archivos")
            .WithSummary("Obtiene el detalle de un archivo procesado")
-           .WithDescription("Devuelve el archivo junto con una página de transacciones usando paginación por cursor.");
+           .WithDescription("Devuelve el archivo junto con las transacciones usando paginación por cursor y/o página, con soporte para filtrado por estado.");
     }
 
     private static async Task<Results<Ok<FileDetailResponse>, NotFound<ApiError>, BadRequest<ApiError>>> HandleAsync(
         int id,
         [FromQuery] string? cursor,
+        [FromQuery] int? page,
         [FromQuery] int? pageSize,
+        [FromQuery] string? status,
         AppDbContext db)
     {
         if (pageSize is not null && pageSize <= 0)
-        {
             return TypedResults.BadRequest(new ApiError("El tamaño de página debe ser mayor que cero."));
+
+        if (page is not null && page <= 0)
+            return TypedResults.BadRequest(new ApiError("El número de página debe ser mayor que cero."));
+
+        TransaccionEstado? estadoFiltro = null;
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            if (status.Equals("PROCESADO", StringComparison.OrdinalIgnoreCase))
+                estadoFiltro = TransaccionEstado.PROCESADO;
+            else if (status.Equals("RECHAZADA", StringComparison.OrdinalIgnoreCase))
+                estadoFiltro = TransaccionEstado.RECHAZADA;
+            else
+                return TypedResults.BadRequest(new ApiError("El parámetro 'status' debe ser 'PROCESADO' o 'RECHAZADA'."));
         }
 
         var effectivePageSize = pageSize ?? 10;
-        CursorPayload? cursorPayload = null;
+        var currentPage = page ?? 1;
 
+        CursorPayload? cursorPayload = null;
         if (!string.IsNullOrWhiteSpace(cursor))
         {
             try
@@ -63,24 +78,31 @@ public class GetFileByIdEndpoint : IEndpoint
             .SingleOrDefaultAsync();
 
         if (fileInfo is null)
-        {
             return TypedResults.NotFound(new ApiError($"No se encontró el archivo con ID {id}"));
-        }
 
-        var transactionsQuery = db.Transacciones
+        var baseQuery = db.Transacciones
             .AsNoTracking()
             .Where(t => t.ArchivoProcesadoId == id);
 
+        if (estadoFiltro.HasValue)
+            baseQuery = baseQuery.Where(t => t.Estado == estadoFiltro.Value);
+
+        var filteredTotal = await baseQuery.CountAsync();
+
+        var query = baseQuery;
+
         if (cursorPayload is not null)
         {
-            transactionsQuery = transactionsQuery.Where(t =>
-                t.Fecha < cursorPayload.CreatedAt.UtcDateTime ||
-                (t.Fecha == cursorPayload.CreatedAt.UtcDateTime && t.Id < cursorPayload.Id));
+            query = query.Where(t => t.Id > cursorPayload.Id);
+        }
+        else if (page is not null && page > 1)
+        {
+            var skipAmount = (currentPage - 1) * effectivePageSize;
+            query = query.Skip(skipAmount);
         }
 
-        var transactions = await transactionsQuery
-            .OrderByDescending(t => t.Fecha)
-            .ThenByDescending(t => t.Id)
+        var rawTransactions = await query
+            .OrderBy(t => t.Id)
             .Take(effectivePageSize + 1)
             .Select(t => new TransaccionDetailResponse(
                 t.Id,
@@ -94,11 +116,16 @@ public class GetFileByIdEndpoint : IEndpoint
                         || t.MotivoRechazo == RechazoMotivos.MontoNoPositivo)))
             .ToListAsync();
 
-        var hasNextPage = transactions.Count > effectivePageSize;
-        var pageTransactions = hasNextPage ? transactions.Take(effectivePageSize).ToList() : transactions;
+        var hasNextPage = rawTransactions.Count > effectivePageSize;
+        var pageTransactions = hasNextPage ? rawTransactions.Take(effectivePageSize).ToList() : rawTransactions;
+
         var nextCursor = hasNextPage && pageTransactions.Count > 0
             ? EncodeCursor(pageTransactions[^1].Fecha, pageTransactions[^1].Id)
             : null;
+
+        var totalPages = filteredTotal <= 0
+            ? 1
+            : (int)Math.Ceiling(filteredTotal / (double)effectivePageSize);
 
         var response = new FileDetailResponse(
             fileInfo.Id,
@@ -111,6 +138,8 @@ public class GetFileByIdEndpoint : IEndpoint
             pageTransactions,
             nextCursor,
             hasNextPage,
+            currentPage,
+            totalPages,
             effectivePageSize);
 
         return TypedResults.Ok(response);
@@ -137,15 +166,9 @@ public class GetFileByIdEndpoint : IEndpoint
             var payload = JsonSerializer.Deserialize<CursorPayload>(json);
 
             if (payload is null || payload.Id <= 0)
-            {
                 throw new FormatException("El cursor no contiene un payload válido.");
-            }
 
             return payload;
-        }
-        catch (FormatException)
-        {
-            throw;
         }
         catch (Exception)
         {
@@ -163,10 +186,8 @@ public class GetFileByIdEndpoint : IEndpoint
     {
         var normalized = value.Replace('-', '+').Replace('_', '/');
         var padding = 4 - (normalized.Length % 4);
-        if (padding is < 4 && padding > 0)
-        {
+        if (padding is < 4 and > 0)
             normalized += new string('=', padding);
-        }
 
         return Convert.FromBase64String(normalized);
     }

@@ -40,6 +40,7 @@ public class AppDbContext : DbContext
                   .WithMany(a => a.Transacciones)
                   .HasForeignKey(t => t.ArchivoProcesadoId);
             entity.HasIndex(e => e.ArchivoProcesadoId);
+            entity.HasIndex(e => new { e.Cuenta, e.Fecha, e.Monto }).IsUnique();
         });
     }
 }

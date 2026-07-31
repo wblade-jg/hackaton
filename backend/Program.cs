@@ -14,7 +14,7 @@ builder.Services.AddFileLogging(builder.Configuration);
 builder.Services.Configure<FileScannerOptions>(
     builder.Configuration.GetSection(FileScannerOptions.SectionName));
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContextPool<AppDbContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
