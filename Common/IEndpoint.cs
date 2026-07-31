@@ -1,4 +1,4 @@
-namespace hackaton.Application;
+namespace hackaton.Common;
 
 public interface IEndpoint
 {

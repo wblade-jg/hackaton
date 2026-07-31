@@ -1,6 +1,7 @@
+using hackaton.Common.Validation;
 using hackaton.Infrastructure.FileSystem;
-using hackaton.Infrastructure.Mapping;
 using hackaton.Infrastructure.Persistence;
+using hackaton.Infrastructure.Routing;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,7 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
 
 builder.Services.AddScoped<IFileScanner, FileScanner>();
-
+builder.Services.AddScoped<TransactionValidator>();
 
 var app = builder.Build();
 

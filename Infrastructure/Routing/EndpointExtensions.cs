@@ -1,6 +1,6 @@
-using hackaton.Application;
+using hackaton.Common;
 
-namespace hackaton.Infrastructure.Mapping;
+namespace hackaton.Infrastructure.Routing;
 
 public static class EndpointExtensions
 {
