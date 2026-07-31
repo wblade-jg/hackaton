@@ -327,7 +327,7 @@ export default function AvailableFiles() {
                   <Typography variant="h5" fontWeight={700}>
                     {result.processed}
                   </Typography>
-                  <Typography variant="body2">Procesadas</Typography>
+                  <Typography variant="body2" fontWeight={700}>Procesadas</Typography>
                 </Box>
                 <Box
                   sx={{
@@ -343,7 +343,7 @@ export default function AvailableFiles() {
                   <Typography variant="h5" fontWeight={700}>
                     {result.rejected}
                   </Typography>
-                  <Typography variant="body2">Rechazadas</Typography>
+                  <Typography variant="body2" fontWeight={700}>Rechazadas</Typography>
                 </Box>
               </Box>
               {result.rejected > 0 && (
