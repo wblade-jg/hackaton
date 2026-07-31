@@ -1,6 +1,7 @@
-using hackaton.Application;
+using hackaton.Common;
 using hackaton.Infrastructure.FileSystem;
 using hackaton.Infrastructure.Persistence;
+using hackaton.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace hackaton.Features.Files;
@@ -17,8 +18,8 @@ public class GetAvailableFilesEndpoint : IEndpoint
         AppDbContext db)
     {
         var onDisk = scanner.GetMatchingFiles().ToList();
-        var processed = await db.ArchivoControls
-            .Where(a => a.Estado == "PROCESADO" || a.Estado == "CON_ERRORES")
+        var processed = await db.ArchivosProcesados
+            .Where(a => a.Estado == ArchivoEstado.PROCESADO || a.Estado == ArchivoEstado.CON_ERRORES)
             .Select(a => a.NombreArchivo)
             .ToHashSetAsync();
 

@@ -1,4 +1,4 @@
-using hackaton.Application;
+using hackaton.Common;
 using hackaton.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,13 +13,13 @@ public class GetFilesEndpoint : IEndpoint
 
     private static async Task<IResult> HandleAsync(AppDbContext db)
     {
-        var files = await db.ArchivoControls
+        var files = await db.ArchivosProcesados
             .OrderByDescending(a => a.FechaProceso)
             .Select(a => new Response(
                 a.Id,
                 a.NombreArchivo,
                 a.FechaProceso,
-                a.Estado,
+                a.Estado.ToString(),
                 a.TotalRegistros,
                 a.Procesados,
                 a.Rechazados))
