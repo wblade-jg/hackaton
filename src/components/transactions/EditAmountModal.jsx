@@ -74,7 +74,7 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
     >
       <DialogTitle id="edit-amount-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
         <EditIcon color="primary" />
-        <Typography variant="h6" fontWeight={600}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Editar Monto y Reprocesar
         </Typography>
       </DialogTitle>
@@ -90,29 +90,29 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
               borderColor: 'warning.light',
             }}
           >
-            <Typography variant="body2" color="warning.dark" fontWeight={500}>
+            <Typography variant="body2" color="warning.dark" sx={{ fontWeight: 500 }}>
               Esta transacción fue rechazada. Edite el monto a continuación para reprocesarla con las validaciones actualizadas.
             </Typography>
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={700}>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>
               Cuenta
             </Typography>
-            <Typography variant="body1" fontWeight={600}>
+            <Typography variant="body1" sx={{ fontWeight: 600 }}>
               {transaction.account}
             </Typography>
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={700}>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>
               Fecha
             </Typography>
             <Typography variant="body1">{transaction.date}</Typography>
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={700}>
+            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>
               Motivo de Rechazo
             </Typography>
             <Typography variant="body2" color="error.main">

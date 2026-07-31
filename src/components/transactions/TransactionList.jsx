@@ -4,7 +4,6 @@ import {
   Box,
   Paper,
   Typography,
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -127,7 +126,7 @@ export default function TransactionList() {
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontWeight={500}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
                         {tx.account}
                       </Typography>
                     </TableCell>
@@ -139,7 +138,7 @@ export default function TransactionList() {
                     <TableCell align="right">
                       <Typography
                         variant="body2"
-                        fontWeight={600}
+                        sx={{ fontWeight: 600 }}
                         color={tx.status === 'REJECTED' ? 'error.main' : 'text.primary'}
                       >
                         ${Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}

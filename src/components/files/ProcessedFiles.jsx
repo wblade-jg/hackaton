@@ -50,11 +50,11 @@ function ResultCell({ total, processed, rejected }) {
       </Box>
       <Typography variant="body2" color="text.secondary">
         {total} total &middot;{' '}
-        <Typography component="span" variant="body2" color="success.main" fontWeight={600}>
+        <Typography component="span" variant="body2" color="success.main" sx={{ fontWeight: 600 }}>
           {processed} OK
         </Typography>{' '}
         &middot;{' '}
-        <Typography component="span" variant="body2" color="error.main" fontWeight={600}>
+        <Typography component="span" variant="body2" color="error.main" sx={{ fontWeight: 600 }}>
           {rejected} rech
         </Typography>
       </Typography>
@@ -219,7 +219,7 @@ export default function ProcessedFiles() {
                         sx={{ '&:last-child td': { borderBottom: 0 } }}
                       >
                         <TableCell>
-                          <Typography variant="body2" fontWeight={600}>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
                             {file.filename}
                           </Typography>
                         </TableCell>

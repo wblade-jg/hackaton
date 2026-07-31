@@ -108,7 +108,7 @@ export default function AvailableFiles() {
               <TableCell>
                 <Box display="flex" alignItems="center" gap={1}>
                   <DescriptionIcon sx={{ color: 'primary.light', fontSize: 20 }} />
-                  <Typography variant="body2" fontWeight={500}>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
                     {file.filename}
                   </Typography>
                 </Box>
@@ -145,7 +145,7 @@ export default function AvailableFiles() {
           <Box display="flex" alignItems="flex-start" gap={1}>
             <DescriptionIcon sx={{ color: 'primary.light', fontSize: 22, mt: 0.25 }} />
             <Box sx={{ minWidth: 0 }}>
-              <Typography variant="body2" fontWeight={600} sx={{ wordBreak: 'break-all' }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-all' }}>
                 {file.filename}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -251,22 +251,22 @@ export default function AvailableFiles() {
           {confirmFile && (
             <Box display="flex" flexDirection="column" gap={1.5}>
               <Box>
-                <Typography variant="body2" color="text.secondary" fontWeight={700}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
                   Archivo
                 </Typography>
-                <Typography variant="body1" fontWeight={600} sx={{ wordBreak: 'break-all' }}>
+                <Typography variant="body1" sx={{ fontWeight: 600, wordBreak: 'break-all' }}>
                   {confirmFile.filename}
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="body2" color="text.secondary" fontWeight={700}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
                   Fecha
                 </Typography>
                 <Typography variant="body1">{confirmFile.date || '-'}</Typography>
               </Box>
               {confirmFile.size && (
                 <Box>
-                  <Typography variant="body2" color="text.secondary" fontWeight={700}>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
                     Tamaño
                   </Typography>
                   <Typography variant="body1">{confirmFile.size}</Typography>
@@ -301,7 +301,7 @@ export default function AvailableFiles() {
           ) : (
             <CheckCircleIcon color="success" />
           )}
-          <Typography variant="h6" fontWeight={600}>
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
             {result && result.rejected > 0 ? 'Archivo procesado con observaciones' : 'Archivo procesado'}
           </Typography>
         </DialogTitle>
@@ -324,10 +324,10 @@ export default function AvailableFiles() {
                     textAlign: 'center',
                   }}
                 >
-                  <Typography variant="h5" fontWeight={700}>
+                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
                     {result.processed}
                   </Typography>
-                  <Typography variant="body2" fontWeight={700}>Procesadas</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>Procesadas</Typography>
                 </Box>
                 <Box
                   sx={{
@@ -340,10 +340,10 @@ export default function AvailableFiles() {
                     textAlign: 'center',
                   }}
                 >
-                  <Typography variant="h5" fontWeight={700}>
+                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
                     {result.rejected}
                   </Typography>
-                  <Typography variant="body2" fontWeight={700}>Rechazadas</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>Rechazadas</Typography>
                 </Box>
               </Box>
               {result.rejected > 0 && (
