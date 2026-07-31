@@ -26,18 +26,17 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
   }, [transaction]);
 
   const validate = () => {
-    const num = parseFloat(amount);
+    const normalized = amount.trim().replace(/,/g, '.');
     if (!amount.trim()) {
       setError('El monto es requerido');
       return false;
     }
-    if (isNaN(num) || num <= 0) {
-      setError('El monto debe ser un número positivo');
+    if (!/^\d+(\.\d{1,2})?$/.test(normalized)) {
+      setError('Ingrese un monto válido con máximo 2 decimales (ej: 1500.50)');
       return false;
     }
-    const parts = amount.split('.');
-    if (parts.length > 1 && parts[1].length > 2) {
-      setError('El monto puede tener máximo 2 decimales');
+    if (parseFloat(normalized) <= 0) {
+      setError('El monto debe ser mayor a cero');
       return false;
     }
     setError('');
@@ -48,7 +47,7 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
     if (!validate()) return;
     setSaving(true);
     try {
-      await onSave(transaction.id, parseFloat(amount));
+      await onSave(transaction.id, parseFloat(amount.trim().replace(/,/g, '.')));
     } catch {
       setError('Error al actualizar el monto. Intente de nuevo.');
     } finally {
@@ -130,13 +129,14 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
             onKeyDown={handleKeyDown}
             error={!!error}
             helperText={error || 'Ingrese el valor monetario corregido'}
-            type="number"
+            type="text"
+            inputMode="decimal"
             fullWidth
             autoFocus
-            inputProps={{
-              step: '0.01',
-              min: '0.01',
-              'aria-label': 'Monto de la transacción',
+            slotProps={{
+              htmlInput: {
+                'aria-label': 'Monto de la transacción',
+              },
             }}
             InputProps={{
               startAdornment: (
