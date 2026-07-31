@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { filesApi, transactionsApi } from '../services/api';
 
 export function useTransactions() {
@@ -6,18 +6,26 @@ export function useTransactions() {
   const [fileInfo, setFileInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const requestIdRef = useRef(0);
 
   const fetchTransactions = useCallback(async (fileId) => {
+    const requestId = ++requestIdRef.current;
+
     setLoading(true);
     setError(null);
+    setTransactions([]);
+    setFileInfo(null);
+
     try {
       const data = await filesApi.getFileDetail(fileId);
+      if (requestId !== requestIdRef.current) return;
       setTransactions(data.transactions || []);
       setFileInfo(data.file || null);
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, []);
 

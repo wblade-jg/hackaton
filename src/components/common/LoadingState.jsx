@@ -1,4 +1,5 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
+import PropTypes from 'prop-types';
 
 export default function LoadingState({ message = 'Cargando...' }) {
   return (
@@ -18,3 +19,7 @@ export default function LoadingState({ message = 'Cargando...' }) {
     </Box>
   );
 }
+
+LoadingState.propTypes = {
+  message: PropTypes.string,
+};

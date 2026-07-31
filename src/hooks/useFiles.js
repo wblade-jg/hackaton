@@ -4,54 +4,53 @@ import { filesApi } from '../services/api';
 export function useFiles() {
   const [availableFiles, setAvailableFiles] = useState([]);
   const [processedFiles, setProcessedFiles] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [availableLoading, setAvailableLoading] = useState(false);
+  const [processedLoading, setProcessedLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [availableError, setAvailableError] = useState(null);
+  const [processedError, setProcessedError] = useState(null);
 
   const fetchAvailable = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    setAvailableLoading(true);
+    setAvailableError(null);
     try {
-      const data = await filesApi.getAvailable();
-      setAvailableFiles(data);
+      setAvailableFiles(await filesApi.getAvailable());
     } catch (err) {
-      setError(err.message);
+      setAvailableError(err.message);
     } finally {
-      setLoading(false);
+      setAvailableLoading(false);
     }
   }, []);
 
   const fetchProcessed = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    setProcessedLoading(true);
+    setProcessedError(null);
     try {
-      const data = await filesApi.getProcessed();
-      setProcessedFiles(data);
+      setProcessedFiles(await filesApi.getProcessed());
     } catch (err) {
-      setError(err.message);
+      setProcessedError(err.message);
     } finally {
-      setLoading(false);
+      setProcessedLoading(false);
     }
   }, []);
 
   const processFile = useCallback(async (filename) => {
-    setLoading(true);
-    setError(null);
+    setProcessing(true);
     try {
-      const result = await filesApi.processFile(filename);
-      return result;
-    } catch (err) {
-      setError(err.message);
-      throw err;
+      return await filesApi.processFile(filename);
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   }, []);
 
   return {
     availableFiles,
     processedFiles,
-    loading,
-    error,
+    availableLoading,
+    processedLoading,
+    processing,
+    availableError,
+    processedError,
     fetchAvailable,
     fetchProcessed,
     processFile,

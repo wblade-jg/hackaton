@@ -1,4 +1,5 @@
 import { Box, Typography } from '@mui/material';
+import PropTypes from 'prop-types';
 import InboxIcon from '@mui/icons-material/InboxOutlined';
 
 export default function EmptyState({ icon, title, description, action }) {
@@ -35,3 +36,10 @@ export default function EmptyState({ icon, title, description, action }) {
     </Box>
   );
 }
+
+EmptyState.propTypes = {
+  icon: PropTypes.elementType,
+  title: PropTypes.string.isRequired,
+  description: PropTypes.string,
+  action: PropTypes.node,
+};

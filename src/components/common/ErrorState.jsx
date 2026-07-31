@@ -1,4 +1,5 @@
 import { Box, Typography, Button } from '@mui/material';
+import PropTypes from 'prop-types';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlineOutlined';
 
 export default function ErrorState({ message = 'Algo salió mal', onRetry }) {
@@ -30,3 +31,8 @@ export default function ErrorState({ message = 'Algo salió mal', onRetry }) {
     </Box>
   );
 }
+
+ErrorState.propTypes = {
+  message: PropTypes.string,
+  onRetry: PropTypes.func,
+};

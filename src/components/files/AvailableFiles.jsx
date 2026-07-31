@@ -32,7 +32,7 @@ import LoadingState from '../common/LoadingState';
 import ErrorState from '../common/ErrorState';
 
 export default function AvailableFiles() {
-  const { availableFiles, loading, error, fetchAvailable, processFile } = useFiles();
+  const { availableFiles, availableLoading: loading, availableError: error, fetchAvailable, processFile } = useFiles();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

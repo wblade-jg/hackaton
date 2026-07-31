@@ -125,10 +125,12 @@ const fileStore = {
       { id: 506, account: '4444444444', date: '2026-07-23', amount: 1500.00, status: 'REJECTED', rejectionReason: 'El monto debe ser mayor a cero' },
     ],
   },
-  nextTxId: 400,
 };
 
 const historyTx = fileStore.transactions;
+
+let nextFileId = Math.max(0, ...fileStore.processed.map((f) => f.id)) + 1;
+let nextTxId = 600;
 
 export const mockApi = {
   async getAvailableFiles() {
@@ -144,33 +146,33 @@ export const mockApi = {
     }
     fileStore.available = fileStore.available.filter((f) => f.filename !== filename);
 
-    const newId = fileStore.processed.length + 1;
+    const fileId = nextFileId++;
     const txCount = Math.floor(Math.random() * 8) + 5;
     const processedCount = Math.floor(txCount * 0.7);
     const rejectedCount = txCount - processedCount;
 
-    const transactions = [];
-    for (let i = 0; i < txCount; i++) {
+    const reasons = [
+      'El número de cuenta debe tener exactamente 10 dígitos',
+      'El monto debe ser mayor a cero',
+      'Transacción duplicada',
+      'La fecha de transacción es requerida',
+    ];
+
+    const transactions = Array.from({ length: txCount }, (_, i) => {
       const isRejected = i >= processedCount;
-      transactions.push({
-        id: fileStore.nextTxId++,
+      return {
+        id: nextTxId++,
         account: String(Math.floor(1000000000 + Math.random() * 9000000000)),
         date: file.date,
         amount: Math.round(Math.random() * 10000 * 100) / 100,
         status: isRejected ? 'REJECTED' : 'PROCESSED',
-        ...(isRejected
-          ? {
-              rejectionReason: ['El número de cuenta debe tener exactamente 10 dígitos', 'El monto debe ser mayor a cero', 'Transacción duplicada', 'La fecha de transacción es requerida'][
-                Math.floor(Math.random() * 4)
-              ],
-            }
-          : {}),
-      });
-    }
+        ...(isRejected ? { rejectionReason: reasons[Math.floor(Math.random() * reasons.length)] } : {}),
+      };
+    });
 
-    fileStore.transactions[newId] = transactions;
+    fileStore.transactions[fileId] = transactions;
     fileStore.processed.push({
-      id: newId,
+      id: fileId,
       filename,
       processedDate: new Date().toISOString().replace('T', ' ').slice(0, 19),
       totalTransactions: txCount,
@@ -179,7 +181,7 @@ export const mockApi = {
       status: deriveFileStatus(processedCount, rejectedCount),
     });
 
-    return { success: true, fileId: newId, processed: processedCount, rejected: rejectedCount };
+    return { success: true, fileId, processed: processedCount, rejected: rejectedCount };
   },
 
   async getProcessedFiles() {

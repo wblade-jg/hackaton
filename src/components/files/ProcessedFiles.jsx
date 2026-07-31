@@ -32,7 +32,8 @@ import ErrorState from '../common/ErrorState';
 
 function ResultCell({ total, processed, rejected }) {
   const processedPct = total ? (processed / total) * 100 : 0;
-  const rejectedPct = total ? (rejected / total) * 100 : 0;  return (
+  const rejectedPct = total ? (rejected / total) * 100 : 0;
+  return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, minWidth: 160 }}>
       <Box
         role="img"
@@ -70,7 +71,7 @@ ResultCell.propTypes = {
 };
 
 export default function ProcessedFiles() {
-  const { processedFiles, loading, error, fetchProcessed } = useFiles();
+  const { processedFiles, processedLoading: loading, processedError: error, fetchProcessed } = useFiles();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [order, setOrder] = useState('desc');

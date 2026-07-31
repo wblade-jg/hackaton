@@ -4,6 +4,8 @@ import {
   Box,
   Paper,
   Typography,
+  Alert,
+  Button,
   Table,
   TableBody,
   TableCell,
@@ -88,16 +90,32 @@ export default function TransactionList() {
       <Paper>
         {loading && transactions.length === 0 ? (
           <LoadingState message="Cargando transacciones..." />
-        ) : error ? (
+        ) : error && transactions.length === 0 ? (
           <ErrorState message={error} onRetry={() => fetchTransactions(fileId)} />
-        ) : transactions.length === 0 ? (
+        ) : transactions.length === 0 && !loading ? (
           <EmptyState
             icon={ReceiptLongIcon}
             title="No hay transacciones"
             description="Este archivo no contiene transacciones para mostrar."
           />
         ) : (
-          <TableContainer>
+          <>
+            {error && transactions.length > 0 && (
+              <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2 }}>
+                <Alert
+                  severity="error"
+                  variant="outlined"
+                  action={
+                    <Button color="error" size="small" onClick={() => fetchTransactions(fileId)}>
+                      Reintentar
+                    </Button>
+                  }
+                >
+                  No se pudo actualizar la lista: {error}
+                </Alert>
+              </Box>
+            )}
+            <TableContainer>
             <Table aria-label="Tabla de transacciones">
               <TableHead>
                 <TableRow>
@@ -180,6 +198,7 @@ export default function TransactionList() {
               </TableBody>
             </Table>
           </TableContainer>
+          </>
         )}
       </Paper>
 
