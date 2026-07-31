@@ -18,6 +18,7 @@ import {
   TableSortLabel,
   IconButton,
   Tooltip,
+  Chip,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -80,6 +81,7 @@ export default function ProcessedFiles() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState(null);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('processedDate');
 
@@ -93,11 +95,23 @@ export default function ProcessedFiles() {
     setOrderBy(property);
   };
 
+  const statusCounts = useMemo(() => {
+    const counts = { EXITOSO: 0, ERRORES: 0, CRITICO: 0 };
+    processedFiles.forEach((f) => {
+      if (counts[f.status] !== undefined) counts[f.status] += 1;
+    });
+    return counts;
+  }, [processedFiles]);
+
   const visibleFiles = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    const filtered = query
-      ? processedFiles.filter((f) => f.filename.toLowerCase().includes(query))
-      : processedFiles;
+    let filtered = processedFiles;
+    if (statusFilter) {
+      filtered = filtered.filter((f) => f.status === statusFilter);
+    }
+    if (query) {
+      filtered = filtered.filter((f) => f.filename.toLowerCase().includes(query));
+    }
 
     const multiplier = order === 'asc' ? 1 : -1;
     return [...filtered].sort((a, b) => {
@@ -105,7 +119,7 @@ export default function ProcessedFiles() {
       const bVal = orderBy === 'filename' ? b.filename : b.processedDate || '';
       return String(aVal).localeCompare(String(bVal)) * multiplier;
     });
-  }, [processedFiles, searchQuery, order, orderBy]);
+  }, [processedFiles, searchQuery, order, orderBy, statusFilter]);
 
   const sortLabelProps = (property) => ({
     active: orderBy === property,
@@ -214,9 +228,39 @@ export default function ProcessedFiles() {
                 pt: 2,
                 pb: 1,
                 display: 'flex',
-                justifyContent: 'flex-end',
+                flexWrap: 'wrap',
+                gap: 1,
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}
             >
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Chip
+                  label={`Todos (${processedFiles.length})`}
+                  color="primary"
+                  variant={statusFilter === null ? 'filled' : 'outlined'}
+                  onClick={() => setStatusFilter(null)}
+                />
+                <Chip
+                  label={`Exitosos (${statusCounts.EXITOSO})`}
+                  color="success"
+                  variant={statusFilter === 'EXITOSO' ? 'filled' : 'outlined'}
+                  onClick={() => setStatusFilter('EXITOSO')}
+                />
+                <Chip
+                  label={`Con errores (${statusCounts.ERRORES})`}
+                  color="warning"
+                  variant={statusFilter === 'ERRORES' ? 'filled' : 'outlined'}
+                  onClick={() => setStatusFilter('ERRORES')}
+                  sx={statusFilter !== 'ERRORES' ? { color: 'warning.dark', borderColor: 'warning.dark' } : undefined}
+                />
+                <Chip
+                  label={`Críticos (${statusCounts.CRITICO})`}
+                  color="error"
+                  variant={statusFilter === 'CRITICO' ? 'filled' : 'outlined'}
+                  onClick={() => setStatusFilter('CRITICO')}
+                />
+              </Box>
               <TextField
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
