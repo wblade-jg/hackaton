@@ -8,7 +8,10 @@ public record FileDetailResponse(
     int TotalRegistros,
     int Procesados,
     int Rechazados,
-    List<TransaccionDetailResponse> Transacciones);
+    List<TransaccionDetailResponse> Transacciones,
+    string? NextCursor,
+    bool HasNextPage,
+    int PageSize);
 
 public record TransaccionDetailResponse(
     int Id,

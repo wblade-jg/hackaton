@@ -1,40 +1,63 @@
-import { useState, useCallback, useRef } from 'react';
-import { filesApi, transactionsApi } from '../services/api';
+import { useState, useCallback, useRef } from "react";
+import { filesApi, transactionsApi } from "../services/api";
 
 export function useTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [fileInfo, setFileInfo] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const requestIdRef = useRef(0);
 
-  const fetchTransactions = useCallback(async (fileId) => {
-    const requestId = ++requestIdRef.current;
+  const fetchTransactions = useCallback(
+    async (fileId, cursor = null, append = false) => {
+      const requestId = ++requestIdRef.current;
 
-    setLoading(true);
-    setError(null);
-    setTransactions([]);
-    setFileInfo(null);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setError(null);
+        setTransactions([]);
+        setFileInfo(null);
+        setNextCursor(null);
+        setHasNextPage(false);
+      }
 
-    try {
-      const data = await filesApi.getFileDetail(fileId);
-      if (requestId !== requestIdRef.current) return;
-      setTransactions(data.transactions || []);
-      setFileInfo(data.file || null);
-    } catch (err) {
-      if (requestId !== requestIdRef.current) return;
-      setError(err.message);
-    } finally {
-      if (requestId === requestIdRef.current) setLoading(false);
-    }
-  }, []);
+      try {
+        const data = await filesApi.getFileDetail(fileId, cursor, 10);
+        if (requestId !== requestIdRef.current) return;
+
+        setTransactions((prev) =>
+          append ? [...prev, ...data.transactions] : data.transactions || [],
+        );
+        setFileInfo(data.file || null);
+        setNextCursor(data.nextCursor ?? null);
+        setHasNextPage(Boolean(data.hasNextPage));
+      } catch (err) {
+        if (requestId !== requestIdRef.current) return;
+        setError(err.message);
+      } finally {
+        if (requestId === requestIdRef.current) {
+          if (append) {
+            setLoadingMore(false);
+          } else {
+            setLoading(false);
+          }
+        }
+      }
+    },
+    [],
+  );
 
   const updateAmount = useCallback(async (transactionId, amount) => {
     setError(null);
     try {
       const result = await transactionsApi.updateAmount(transactionId, amount);
       setTransactions((prev) =>
-        prev.map((t) => (t.id === transactionId ? { ...t, ...result } : t))
+        prev.map((t) => (t.id === transactionId ? { ...t, ...result } : t)),
       );
       return result;
     } catch (err) {
@@ -47,7 +70,10 @@ export function useTransactions() {
     transactions,
     fileInfo,
     loading,
+    loadingMore,
     error,
+    nextCursor,
+    hasNextPage,
     fetchTransactions,
     updateAmount,
   };

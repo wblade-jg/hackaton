@@ -1,9 +1,9 @@
 const delay = (ms = 600) => new Promise((r) => setTimeout(r, ms));
 
 function deriveFileStatus(processedCount, rejectedCount) {
-  if (rejectedCount === 0) return 'EXITOSO';
-  if (processedCount === 0) return 'CRITICO';
-  return 'ERRORES';
+  if (rejectedCount === 0) return "EXITOSO";
+  if (processedCount === 0) return "CRITICO";
+  return "ERRORES";
 }
 
 const fileStore = {
@@ -30,9 +30,13 @@ export const mockApi = {
     await delay(1200);
     const file = fileStore.available.find((f) => f.filename === filename);
     if (!file) {
-      throw new Error(`Archivo "${filename}" no encontrado en el directorio de entrada`);
+      throw new Error(
+        `Archivo "${filename}" no encontrado en el directorio de entrada`,
+      );
     }
-    fileStore.available = fileStore.available.filter((f) => f.filename !== filename);
+    fileStore.available = fileStore.available.filter(
+      (f) => f.filename !== filename,
+    );
 
     const fileId = nextFileId++;
     const txCount = Math.floor(Math.random() * 8) + 5;
@@ -40,10 +44,10 @@ export const mockApi = {
     const rejectedCount = txCount - processedCount;
 
     const reasons = [
-      'El número de cuenta debe tener exactamente 10 dígitos',
-      'El monto debe ser mayor a cero',
-      'Transacción duplicada',
-      'La fecha de transacción es requerida',
+      "El número de cuenta debe tener exactamente 10 dígitos",
+      "El monto debe ser mayor a cero",
+      "Transacción duplicada",
+      "La fecha de transacción es requerida",
     ];
 
     const transactions = Array.from({ length: txCount }, (_, i) => {
@@ -53,8 +57,13 @@ export const mockApi = {
         account: String(Math.floor(1000000000 + Math.random() * 9000000000)),
         date: file.date,
         amount: Math.round(Math.random() * 10000 * 100) / 100,
-        status: isRejected ? 'REJECTED' : 'PROCESSED',
-        ...(isRejected ? { rejectionReason: reasons[Math.floor(Math.random() * reasons.length)] } : {}),
+        status: isRejected ? "REJECTED" : "PROCESSED",
+        ...(isRejected
+          ? {
+              rejectionReason:
+                reasons[Math.floor(Math.random() * reasons.length)],
+            }
+          : {}),
       };
     });
 
@@ -62,14 +71,19 @@ export const mockApi = {
     fileStore.processed.push({
       id: fileId,
       filename,
-      processedDate: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      processedDate: new Date().toISOString().replace("T", " ").slice(0, 19),
       totalTransactions: txCount,
       processedCount,
       rejectedCount,
       status: deriveFileStatus(processedCount, rejectedCount),
     });
 
-    return { success: true, fileId, processed: processedCount, rejected: rejectedCount };
+    return {
+      success: true,
+      fileId,
+      processed: processedCount,
+      rejected: rejectedCount,
+    };
   },
 
   async getProcessedFiles() {
@@ -77,14 +91,25 @@ export const mockApi = {
     return [...fileStore.processed];
   },
 
-  async getFileDetail(fileId) {
+  async getFileDetail(fileId, cursor = null, pageSize = 10) {
     await delay();
     const file = fileStore.processed.find((f) => f.id === Number(fileId));
-    const transactions = fileStore.transactions[fileId] || [];
+    const transactions = [...(fileStore.transactions[fileId] || [])];
     if (!file) {
       throw new Error(`Archivo con ID ${fileId} no encontrado`);
     }
-    return { file, transactions };
+
+    const sorted = [...transactions].sort((a, b) => b.id - a.id);
+    const startIndex = cursor ? Number(cursor) : 0;
+    const page = sorted.slice(startIndex, startIndex + pageSize + 1);
+    const hasNextPage = page.length > pageSize;
+    const visible = hasNextPage ? page.slice(0, pageSize) : page;
+    const nextCursor =
+      hasNextPage && visible.length > 0
+        ? String(startIndex + visible.length)
+        : null;
+
+    return { file, transactions: visible, nextCursor, hasNextPage, pageSize };
   },
 
   async updateTransactionAmount(transactionId, amount) {
@@ -103,24 +128,31 @@ export const mockApi = {
               other.id !== tx.id &&
               other.account === tx.account &&
               other.date === tx.date &&
-              other.amount === amount
+              other.amount === amount,
           );
-        tx.status = valid ? 'PROCESSED' : 'REJECTED';
+        tx.status = valid ? "PROCESSED" : "REJECTED";
         tx.rejectionReason = valid
           ? undefined
           : !/^\d{10}$/.test(tx.account)
-            ? 'El número de cuenta debe tener exactamente 10 dígitos'
+            ? "El número de cuenta debe tener exactamente 10 dígitos"
             : amount <= 0
-              ? 'El monto debe ser mayor a cero'
+              ? "El monto debe ser mayor a cero"
               : !tx.date
-                ? 'La fecha de transacción es requerida'
-                : 'Transacción duplicada';
+                ? "La fecha de transacción es requerida"
+                : "Transacción duplicada";
         const fileId = Number(key);
         const file = fileStore.processed.find((f) => f.id === fileId);
         if (file) {
-          file.processedCount = historyTx[key].filter((t) => t.status === 'PROCESSED').length;
-          file.rejectedCount = historyTx[key].filter((t) => t.status === 'REJECTED').length;
-          file.status = deriveFileStatus(file.processedCount, file.rejectedCount);
+          file.processedCount = historyTx[key].filter(
+            (t) => t.status === "PROCESSED",
+          ).length;
+          file.rejectedCount = historyTx[key].filter(
+            (t) => t.status === "REJECTED",
+          ).length;
+          file.status = deriveFileStatus(
+            file.processedCount,
+            file.rejectedCount,
+          );
         }
         return { ...tx };
       }
