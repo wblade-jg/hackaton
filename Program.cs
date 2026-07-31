@@ -1,12 +1,15 @@
 using hackaton.Common.Validation;
 using hackaton.Features.Files;
 using hackaton.Infrastructure.FileSystem;
+using hackaton.Infrastructure.Logging;
 using hackaton.Infrastructure.Persistence;
 using hackaton.Infrastructure.Routing;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddFileLogging(builder.Configuration);
 
 builder.Services.Configure<FileScannerOptions>(
     builder.Configuration.GetSection(FileScannerOptions.SectionName));
