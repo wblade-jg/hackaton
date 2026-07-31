@@ -60,15 +60,19 @@ export default function StatusBadge({ status }) {
 
   return (
     <Chip
-      icon={<Icon sx={{ fontSize: 18 }} />}
+      icon={<Icon sx={{ fontSize: 15 }} />}
       label={config.label}
       color={config.color}
       size="small"
       variant="filled"
       sx={{
-        fontWeight: 500,
+        fontWeight: 700,
+        fontSize: '0.6875rem',
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
         height: 28,
-        '& .MuiChip-icon': { ml: 0.5 },
+        borderRadius: '999px',
+        '& .MuiChip-icon': { ml: 0.75 },
       }}
     />
   );

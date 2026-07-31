@@ -16,19 +16,33 @@ export default function EmptyState({ icon, title, description, action }) {
       aria-label={title}
     >
       <Box
-        component={icon || InboxIcon}
         sx={{
-          fontSize: 64,
-          color: 'text.secondary',
-          mb: 2,
-          opacity: 0.5,
+          width: 88,
+          height: 88,
+          borderRadius: '50%',
+          border: '2px solid',
+          borderColor: 'divider',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          mb: 2.5,
+          backgroundColor: 'background.default',
         }}
-      />
-      <Typography variant="h6" color="text.secondary" gutterBottom>
+      >
+        <Box
+          component={icon || InboxIcon}
+          sx={{ fontSize: 38, color: 'text.secondary' }}
+        />
+      </Box>
+      <Typography variant="h6" color="text.primary" gutterBottom sx={{ fontWeight: 600 }}>
         {title}
       </Typography>
       {description && (
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400, mb: 2 }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ maxWidth: 420, mb: 2 }}
+        >
           {description}
         </Typography>
       )}

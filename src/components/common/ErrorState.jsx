@@ -14,13 +14,26 @@ export default function ErrorState({ message = 'Algo salió mal', onRetry }) {
       textAlign="center"
       role="alert"
     >
-      <ErrorOutlineIcon
-        sx={{ fontSize: 56, color: 'error.main', mb: 2 }}
-      />
-      <Typography variant="h6" color="error.main" gutterBottom>
+      <Box
+        sx={{
+          width: 88,
+          height: 88,
+          borderRadius: '50%',
+          border: '2px solid',
+          borderColor: 'error.main',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          mb: 2.5,
+          backgroundColor: '#FDF3F3',
+        }}
+      >
+        <ErrorOutlineIcon sx={{ fontSize: 38, color: 'error.main' }} />
+      </Box>
+      <Typography variant="h6" color="error.main" gutterBottom sx={{ fontWeight: 600 }}>
         Error
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400, mb: 3 }}>
+      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 420, mb: 3 }}>
         {message}
       </Typography>
       {onRetry && (

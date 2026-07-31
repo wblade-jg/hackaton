@@ -17,6 +17,108 @@ const historyTx = fileStore.transactions;
 let nextFileId = 1;
 let nextTxId = 1;
 
+// --- Synthetic demo data (frontend showcase only) ---------------------------
+// Seed a small, deterministic batch so every screen renders populated. This is
+// presentation material for the mock adapter; the real .NET API owns production
+// data. Marked demo/*.csv to keep it clearly separate from real correspondent
+// files.
+const REASONS = [
+  'El número de cuenta debe tener exactamente 10 dígitos',
+  'El monto debe ser mayor a cero',
+  'Transacción duplicada',
+  'La fecha de transacción es requerida',
+];
+
+function mulberry32(seed) {
+  let a = seed;
+  return function next() {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function buildSeedTransactions({ fileId, date, total, rejectedCount, seed }) {
+  const rand = mulberry32(seed);
+  const transactions = [];
+  const seen = new Set();
+  for (let i = 0; i < total; i += 1) {
+    let account;
+    do {
+      account = String(Math.floor(1000000000 + rand() * 9000000000));
+    } while (seen.has(account));
+    seen.add(account);
+    const isRejected = i >= total - rejectedCount;
+    const amount = Math.round(rand() * 12000 * 100) / 100;
+    transactions.push({
+      id: nextTxId++,
+      account,
+      date,
+      amount,
+      status: isRejected ? 'REJECTED' : 'PROCESSED',
+      ...(isRejected ? { rejectionReason: REASONS[Math.floor(rand() * REASONS.length)] } : {}),
+    });
+  }
+  fileStore.transactions[fileId] = transactions;
+  return transactions;
+}
+
+function seedProcessedFile({ filename, date, processedDate, total, processedCount, seed }) {
+  const fileId = nextFileId++;
+  buildSeedTransactions({
+    fileId,
+    date,
+    total,
+    rejectedCount: total - processedCount,
+    seed,
+  });
+  fileStore.processed.push({
+    id: fileId,
+    filename,
+    processedDate,
+    totalTransactions: total,
+    processedCount,
+    rejectedCount: total - processedCount,
+    status: deriveFileStatus(processedCount, total - processedCount),
+  });
+}
+
+fileStore.available = [
+  { filename: 'transactions_31072026.csv', date: '31/07/2026', size: 48 * 1024, lastModified: '2026-07-31 06:45:00' },
+  { filename: 'transactions_29072026.csv', date: '29/07/2026', size: 27 * 1024, lastModified: '2026-07-29 18:30:00' },
+  { filename: 'transactions_28072026.csv', date: '28/07/2026', size: 12 * 1024, lastModified: '2026-07-28 17:02:00' },
+];
+
+seedProcessedFile({
+  filename: 'transactions_27072026.csv',
+  date: '27/07/2026',
+  processedDate: '2026-07-27 19:10:00',
+  total: 40,
+  processedCount: 40,
+  seed: 11,
+});
+
+seedProcessedFile({
+  filename: 'transactions_26072026.csv',
+  date: '26/07/2026',
+  processedDate: '2026-07-26 18:55:00',
+  total: 25,
+  processedCount: 16,
+  seed: 22,
+});
+
+seedProcessedFile({
+  filename: 'transactions_25072026.csv',
+  date: '25/07/2026',
+  processedDate: '2026-07-25 20:20:00',
+  total: 12,
+  processedCount: 0,
+  seed: 33,
+});
+// --- End synthetic demo data -------------------------------------------------
+
 export const mockApi = {
   async getAvailableFiles() {
     await delay();
