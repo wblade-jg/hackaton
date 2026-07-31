@@ -5,47 +5,42 @@ export function useTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [fileInfo, setFileInfo] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [nextCursor, setNextCursor] = useState(null);
   const [hasNextPage, setHasNextPage] = useState(false);
   const requestIdRef = useRef(0);
 
+  /**
+   * @param {string|number} fileId
+   * @param {number} page - 1-based page number
+   * @param {string|null} status - "PROCESSED", "REJECTED", or null for all
+   * @param {string|null} cursor - Optional cursor for cursor-based pagination
+   */
   const fetchTransactions = useCallback(
-    async (fileId, cursor = null, append = false) => {
+    async (fileId, page = 1, status = null, cursor = null) => {
       const requestId = ++requestIdRef.current;
-
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-        setError(null);
-        setTransactions([]);
-        setFileInfo(null);
-        setNextCursor(null);
-        setHasNextPage(false);
-      }
+      setLoading(true);
+      setError(null);
+      setTransactions([]);
 
       try {
-        const data = await filesApi.getFileDetail(fileId, cursor, 10);
+        const data = await filesApi.getFileDetail(fileId, page, 10, status, cursor);
         if (requestId !== requestIdRef.current) return;
 
-        setTransactions((prev) =>
-          append ? [...prev, ...data.transactions] : data.transactions || [],
-        );
+        setTransactions(data.transactions || []);
         setFileInfo(data.file || null);
+        setCurrentPage(data.currentPage ?? page);
+        setTotalPages(data.totalPages ?? 1);
         setNextCursor(data.nextCursor ?? null);
-        setHasNextPage(Boolean(data.hasNextPage));
+        setHasNextPage(data.hasNextPage ?? false);
       } catch (err) {
         if (requestId !== requestIdRef.current) return;
         setError(err.message);
       } finally {
         if (requestId === requestIdRef.current) {
-          if (append) {
-            setLoadingMore(false);
-          } else {
-            setLoading(false);
-          }
+          setLoading(false);
         }
       }
     },
@@ -70,8 +65,9 @@ export function useTransactions() {
     transactions,
     fileInfo,
     loading,
-    loadingMore,
     error,
+    currentPage,
+    totalPages,
     nextCursor,
     hasNextPage,
     fetchTransactions,

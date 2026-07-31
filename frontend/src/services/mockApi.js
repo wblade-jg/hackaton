@@ -91,7 +91,7 @@ export const mockApi = {
     return [...fileStore.processed];
   },
 
-  async getFileDetail(fileId, cursor = null, pageSize = 10) {
+  async getFileDetail(fileId, page = 1, pageSize = 10) {
     await delay();
     const file = fileStore.processed.find((f) => f.id === Number(fileId));
     const transactions = [...(fileStore.transactions[fileId] || [])];
@@ -100,16 +100,26 @@ export const mockApi = {
     }
 
     const sorted = [...transactions].sort((a, b) => b.id - a.id);
-    const startIndex = cursor ? Number(cursor) : 0;
-    const page = sorted.slice(startIndex, startIndex + pageSize + 1);
-    const hasNextPage = page.length > pageSize;
-    const visible = hasNextPage ? page.slice(0, pageSize) : page;
+    const pageNumber = Math.max(1, Number(page));
+    const startIndex = (pageNumber - 1) * pageSize;
+    const pageSlice = sorted.slice(startIndex, startIndex + pageSize + 1);
+    const hasNextPage = pageSlice.length > pageSize;
+    const visible = hasNextPage ? pageSlice.slice(0, pageSize) : pageSlice;
     const nextCursor =
       hasNextPage && visible.length > 0
         ? String(startIndex + visible.length)
         : null;
+    const totalPages = Math.max(1, Math.ceil(transactions.length / pageSize));
 
-    return { file, transactions: visible, nextCursor, hasNextPage, pageSize };
+    return {
+      file,
+      transactions: visible,
+      nextCursor,
+      hasNextPage,
+      currentPage: pageNumber,
+      totalPages,
+      pageSize,
+    };
   },
 
   async updateTransactionAmount(transactionId, amount) {

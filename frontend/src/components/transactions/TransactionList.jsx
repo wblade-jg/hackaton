@@ -21,14 +21,17 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Pagination,
   useMediaQuery,
   useTheme,
+  Chip,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import SearchIcon from "@mui/icons-material/Search";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { useTransactions } from "../../hooks/useTransactions";
 import { formatCurrency, formatDate } from "../../utils/format";
 import StatusBadge from "../common/StatusBadge";
@@ -79,13 +82,13 @@ export default function TransactionList() {
     transactions,
     fileInfo,
     loading,
-    loadingMore,
     error,
-    nextCursor,
-    hasNextPage,
+    currentPage,
+    totalPages,
     fetchTransactions,
     updateAmount,
   } = useTransactions();
+
   const [rejectionModal, setRejectionModal] = useState({
     open: false,
     transaction: null,
@@ -94,120 +97,182 @@ export default function TransactionList() {
     open: false,
     transaction: null,
   });
-  const [searchQuery, setSearchQuery] = useState("");
+  // Server-side filter state
   const [statusFilter, setStatusFilter] = useState("all");
+  // Local search state (filters within the current page)
+  const [searchQuery, setSearchQuery] = useState("");
 
+  // Fetch on mount and whenever fileId changes (reset to page 1)
   useEffect(() => {
-    if (fileId) fetchTransactions(fileId);
-  }, [fileId, fetchTransactions]);
+    if (fileId) fetchTransactions(fileId, 1, statusFilter === "all" ? null : statusFilter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileId]);
+
+  const counts = useMemo(
+    () => ({
+      total: fileInfo?.totalTransactions ?? 0,
+      processed: fileInfo?.processedCount ?? 0,
+      rejected: fileInfo?.rejectedCount ?? 0,
+    }),
+    [fileInfo],
+  );
+
+  // Local search only filters the current page results (account number)
+  const visibleTransactions = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return transactions;
+    return transactions.filter((tx) =>
+      tx.account.toLowerCase().includes(query),
+    );
+  }, [transactions, searchQuery]);
+
+  // When status filter changes, go back to page 1 with new filter
+  const handleStatusFilterChange = useCallback(
+    (newStatus) => {
+      setStatusFilter(newStatus);
+      setSearchQuery("");
+      if (fileId)
+        fetchTransactions(fileId, 1, newStatus === "all" ? null : newStatus);
+    },
+    [fileId, fetchTransactions],
+  );
 
   const handleAmountUpdated = useCallback(
     async (transactionId, newAmount) => {
       await updateAmount(transactionId, newAmount);
       setEditModal({ open: false, transaction: null });
-      if (fileId) fetchTransactions(fileId);
+      if (fileId)
+        fetchTransactions(
+          fileId,
+          currentPage,
+          statusFilter === "all" ? null : statusFilter,
+        );
     },
-    [updateAmount, fileId, fetchTransactions],
+    [updateAmount, fileId, fetchTransactions, currentPage, statusFilter],
   );
 
-  const counts = useMemo(
-    () => ({
-      total: fileInfo?.totalTransactions ?? transactions.length,
-      processed:
-        fileInfo?.processedCount ??
-        transactions.filter((t) => t.status === "PROCESSED").length,
-      rejected:
-        fileInfo?.rejectedCount ??
-        transactions.filter((t) => t.status === "REJECTED").length,
-    }),
-    [fileInfo, transactions],
+  // Server-side page change keeps active filter
+  const handlePageChange = useCallback(
+    (_event, page) => {
+      if (fileId)
+        fetchTransactions(
+          fileId,
+          page,
+          statusFilter === "all" ? null : statusFilter,
+        );
+    },
+    [fileId, fetchTransactions, statusFilter],
   );
 
-  const visibleTransactions = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    return transactions.filter((tx) => {
-      const matchesStatus =
-        statusFilter === "all" || tx.status === statusFilter;
-      const matchesAccount = !query || tx.account.toLowerCase().includes(query);
-      return matchesStatus && matchesAccount;
-    });
-  }, [transactions, searchQuery, statusFilter]);
+  // ── Pagination bar shared across desktop/mobile ──────────────────────────────
+  const paginationBar = totalPages > 1 && (
+    <Box
+      sx={{
+        px: { xs: 2, sm: 3 },
+        py: 1.5,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: 1,
+        borderTop: "1px solid",
+        borderColor: "divider",
+      }}
+    >
+      <Typography variant="body2" color="text.secondary">
+        Página <strong>{currentPage}</strong> de <strong>{totalPages}</strong>
+      </Typography>
+      <Pagination
+        count={totalPages}
+        page={currentPage}
+        onChange={handlePageChange}
+        color="primary"
+        siblingCount={1}
+        boundaryCount={1}
+        size={isMobile ? "small" : "medium"}
+      />
+    </Box>
+  );
 
+  // ── Mobile card render ────────────────────────────────────────────────────────
   const renderCards = (
-    <CardList
-      items={visibleTransactions}
-      renderItem={(tx) => (
-        <>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 1,
-              minWidth: 0,
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, wordBreak: "break-all" }}
+    <>
+      <CardList
+        items={visibleTransactions}
+        renderItem={(tx) => (
+          <>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 1,
+                minWidth: 0,
+              }}
             >
-              {tx.account}
-            </Typography>
-            <StatusBadge status={tx.status} />
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: 1,
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              {tx.date}
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{ fontWeight: 600 }}
-              color={tx.status === "REJECTED" ? "error.main" : "text.primary"}
-            >
-              {formatCurrency(tx.amount)}
-            </Typography>
-          </Box>
-          {tx.status === "REJECTED" && (
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <Button
-                fullWidth
-                variant="outlined"
-                color="error"
-                size="small"
-                startIcon={<VisibilityIcon />}
-                onClick={() =>
-                  setRejectionModal({ open: true, transaction: tx })
-                }
-                sx={{ minHeight: 44 }}
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, wordBreak: "break-all" }}
               >
-                Ver motivo de rechazo
-              </Button>
-              <Button
-                fullWidth
-                variant="contained"
-                size="small"
-                startIcon={<EditIcon />}
-                onClick={() => setEditModal({ open: true, transaction: tx })}
-                sx={{ minHeight: 44 }}
-              >
-                Editar monto
-              </Button>
+                {tx.account}
+              </Typography>
+              <StatusBadge status={tx.status} />
             </Box>
-          )}
-        </>
-      )}
-    />
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                {tx.date}
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: 600 }}
+                color={tx.status === "REJECTED" ? "error.main" : "text.primary"}
+              >
+                {formatCurrency(tx.amount)}
+              </Typography>
+            </Box>
+            {tx.status === "REJECTED" && (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  startIcon={<VisibilityIcon />}
+                  onClick={() =>
+                    setRejectionModal({ open: true, transaction: tx })
+                  }
+                  sx={{ minHeight: 44 }}
+                >
+                  Ver motivo de rechazo
+                </Button>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  size="small"
+                  startIcon={<EditIcon />}
+                  onClick={() => setEditModal({ open: true, transaction: tx })}
+                  sx={{ minHeight: 44 }}
+                >
+                  Editar monto
+                </Button>
+              </Box>
+            )}
+          </>
+        )}
+      />
+    </>
   );
 
   return (
     <Box sx={{ px: { xs: 2, sm: 3 } }}>
+      {/* ── Back button + title ─────────────────────────────────────────────── */}
       <Box
         sx={{
           display: "flex",
@@ -237,6 +302,7 @@ export default function TransactionList() {
         </Box>
       </Box>
 
+      {/* ── Summary cards ───────────────────────────────────────────────────── */}
       <Box
         sx={{ display: "flex", gap: 1.5, flexWrap: "wrap", mb: 2.5 }}
         aria-label="Resumen de transacciones"
@@ -262,7 +328,7 @@ export default function TransactionList() {
             message={error}
             onRetry={() => fetchTransactions(fileId)}
           />
-        ) : transactions.length === 0 && !loading ? (
+        ) : transactions.length === 0 && !loading && statusFilter === "all" ? (
           <EmptyState
             icon={ReceiptLongIcon}
             title="No hay transacciones"
@@ -290,6 +356,7 @@ export default function TransactionList() {
               </Box>
             )}
 
+            {/* ── Filters bar ─────────────────────────────────────────────── */}
             <Box
               sx={{
                 px: { xs: 2, sm: 3 },
@@ -320,48 +387,84 @@ export default function TransactionList() {
                   },
                 }}
               />
-              <FormControl size="small" sx={{ minWidth: 180 }}>
-                <InputLabel id="status-filter-label">Estado</InputLabel>
+              <FormControl size="small" sx={{ minWidth: 200 }}>
+                <InputLabel id="status-filter-label">
+                  <Box
+                    component="span"
+                    sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                  >
+                    <FilterListIcon fontSize="small" />
+                    Estado
+                  </Box>
+                </InputLabel>
                 <Select
                   labelId="status-filter-label"
                   id="status-filter"
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  label="Estado"
+                  onChange={(e) => handleStatusFilterChange(e.target.value)}
+                  label={
+                    <Box
+                      component="span"
+                      sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+                    >
+                      <FilterListIcon fontSize="small" />
+                      Estado
+                    </Box>
+                  }
                 >
                   <MenuItem value="all">Todos los estados</MenuItem>
-                  <MenuItem value="PROCESSED">Procesadas</MenuItem>
-                  <MenuItem value="REJECTED">Rechazadas</MenuItem>
+                  <MenuItem value="PROCESSED">
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                    >
+                      <Chip
+                        label="●"
+                        size="small"
+                        sx={{
+                          backgroundColor: "success.light",
+                          color: "success.dark",
+                          height: 18,
+                          fontSize: "0.6rem",
+                        }}
+                      />
+                      Procesadas
+                    </Box>
+                  </MenuItem>
+                  <MenuItem value="REJECTED">
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                    >
+                      <Chip
+                        label="●"
+                        size="small"
+                        sx={{
+                          backgroundColor: "error.light",
+                          color: "error.dark",
+                          height: 18,
+                          fontSize: "0.6rem",
+                        }}
+                      />
+                      Rechazadas
+                    </Box>
+                  </MenuItem>
                 </Select>
               </FormControl>
             </Box>
 
+            {/* ── Pagination top (desktop) ─────────────────────────────────── */}
+            {!isMobile && paginationBar}
+
             {isMobile ? (
-              visibleTransactions.length === 0 ? (
+              visibleTransactions.length === 0 && !loading ? (
                 <Box sx={{ p: 4, textAlign: "center" }}>
                   <Typography variant="body2" color="text.secondary">
-                    No se encontraron transacciones con los filtros
-                    seleccionados
+                    No se encontraron transacciones con los filtros seleccionados
                   </Typography>
                 </Box>
               ) : (
                 <Box>
                   {renderCards}
-                  {hasNextPage && (
-                    <Box
-                      sx={{ p: 2, display: "flex", justifyContent: "center" }}
-                    >
-                      <Button
-                        variant="outlined"
-                        onClick={() =>
-                          fetchTransactions(fileId, nextCursor, true)
-                        }
-                        disabled={loadingMore}
-                      >
-                        {loadingMore ? "Cargando..." : "Cargar más"}
-                      </Button>
-                    </Box>
-                  )}
+                  {paginationBar}
                 </Box>
               )
             ) : (
@@ -379,7 +482,15 @@ export default function TransactionList() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {visibleTransactions.length === 0 ? (
+                      {loading ? (
+                        <TableRow>
+                          <TableCell colSpan={6} align="center" sx={{ py: 5 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              Cargando transacciones...
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      ) : visibleTransactions.length === 0 ? (
                         <TableRow>
                           <TableCell colSpan={6} align="center" sx={{ py: 5 }}>
                             <Typography variant="body2" color="text.secondary">
@@ -400,14 +511,14 @@ export default function TransactionList() {
                                   ? "rgba(194, 52, 43, 0.045)"
                                   : undefined,
                             }}
-                            aria-label={`Transacción ${index + 1}`}
+                            aria-label={`Transacción ${(currentPage - 1) * 10 + index + 1}`}
                           >
                             <TableCell>
                               <Typography
                                 variant="body2"
                                 color="text.secondary"
                               >
-                                {index + 1}
+                                {(currentPage - 1) * 10 + index + 1}
                               </Typography>
                             </TableCell>
                             <TableCell>
@@ -499,19 +610,7 @@ export default function TransactionList() {
                     </TableBody>
                   </Table>
                 </TableContainer>
-                {hasNextPage && (
-                  <Box sx={{ p: 2, display: "flex", justifyContent: "center" }}>
-                    <Button
-                      variant="outlined"
-                      onClick={() =>
-                        fetchTransactions(fileId, nextCursor, true)
-                      }
-                      disabled={loadingMore}
-                    >
-                      {loadingMore ? "Cargando..." : "Cargar más"}
-                    </Button>
-                  </Box>
-                )}
+                {paginationBar}
               </>
             )}
           </>

@@ -3,6 +3,22 @@ import { mockApi } from "./mockApi";
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 
+/**
+ * Maps a backend ArchivoEstado enum value to the frontend display status.
+ * Backend:  PROCESADO | CON_ERRORES | FALLIDO
+ * Frontend: EXITOSO   | ERRORES/CRITICO | CRITICO
+ */
+function mapFileStatus(estado, processedCount, rejectedCount) {
+  if (estado === "PROCESADO") return "EXITOSO";
+  if (estado === "FALLIDO") return "CRITICO";
+  if (estado === "CON_ERRORES") {
+    return processedCount === 0 ? "CRITICO" : "ERRORES";
+  }
+  if (rejectedCount === 0) return "EXITOSO";
+  if (processedCount === 0) return "CRITICO";
+  return "ERRORES";
+}
+
 export const filesApi = USE_MOCK
   ? {
       getAvailable: mockApi.getAvailableFiles,
@@ -16,7 +32,8 @@ export const filesApi = USE_MOCK
         return (data || []).map((item) => ({
           filename: item.nombreArchivo || item.filename,
           date: item.fecha || item.date || "-",
-          size: item.size || 0,
+          size: item.tamanioBytes ?? item.size ?? 0,
+          totalRows: item.totalFilas ?? item.totalRows ?? null,
         }));
       },
       processFile: async (filename) => {
@@ -39,32 +56,48 @@ export const filesApi = USE_MOCK
       },
       getProcessed: async () => {
         const data = await apiClient("/files");
-        return (data || []).map((item) => ({
-          id: item.id,
-          filename: item.nombreArchivo || item.filename,
-          processedDate: item.fechaProceso || item.processedDate,
-          totalTransactions: item.totalRegistros ?? item.totalTransactions ?? 0,
-          processedCount: item.procesados ?? item.processedCount ?? 0,
-          rejectedCount: item.rechazados ?? item.rejectedCount ?? 0,
-          status: item.estado || item.status,
-        }));
+        return (data || []).map((item) => {
+          const processedCount = item.procesados ?? item.processedCount ?? 0;
+          const rejectedCount = item.rechazados ?? item.rejectedCount ?? 0;
+          return {
+            id: item.id,
+            filename: item.nombreArchivo || item.filename,
+            processedDate: item.fechaProceso || item.processedDate,
+            totalTransactions: item.totalRegistros ?? item.totalTransactions ?? 0,
+            processedCount,
+            rejectedCount,
+            status: mapFileStatus(item.estado || item.status, processedCount, rejectedCount),
+          };
+        });
       },
-      getFileDetail: async (id, cursor = null, pageSize = 10) => {
+      getFileDetail: async (id, page = 1, pageSize = 10, status = null, cursor = null) => {
         const query = new URLSearchParams();
-        if (cursor) query.set("cursor", cursor);
+        if (cursor) {
+          query.set("cursor", cursor);
+        } else if (page) {
+          query.set("page", String(page));
+        }
         if (pageSize) query.set("pageSize", String(pageSize));
+
+        if (status && status !== "all") {
+          const backendStatus =
+            status === "PROCESSED" ? "PROCESADO" : "RECHAZADA";
+          query.set("status", backendStatus);
+        }
 
         const data = await apiClient(
           `/files/${id}${query.toString() ? `?${query.toString()}` : ""}`,
         );
+        const processedCount = data.procesados ?? data.processedCount ?? 0;
+        const rejectedCount = data.rechazados ?? data.rejectedCount ?? 0;
         const file = {
           id: data.id,
           filename: data.nombreArchivo || data.filename,
           processedDate: data.fechaProceso || data.processedDate,
           totalTransactions: data.totalRegistros ?? data.totalTransactions ?? 0,
-          processedCount: data.procesados ?? data.processedCount ?? 0,
-          rejectedCount: data.rechazados ?? data.rejectedCount ?? 0,
-          status: data.estado || data.status,
+          processedCount,
+          rejectedCount,
+          status: mapFileStatus(data.estado || data.status, processedCount, rejectedCount),
         };
 
         const transactions = (
@@ -87,8 +120,10 @@ export const filesApi = USE_MOCK
         return {
           file,
           transactions,
-          nextCursor: data.nextCursor ?? null,
+          currentPage: data.currentPage ?? page,
+          totalPages: data.totalPages ?? 1,
           hasNextPage: Boolean(data.hasNextPage),
+          nextCursor: data.nextCursor ?? null,
           pageSize: data.pageSize ?? pageSize,
         };
       },

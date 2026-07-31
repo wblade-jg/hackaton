@@ -191,6 +191,12 @@ export default function AvailableFiles() {
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {file.date || '-'} &middot; {formatBytes(file.size)}
+              {file.totalRows != null && (
+                <>
+                  {' '}&middot;{' '}
+                  <strong>{file.totalRows.toLocaleString()}</strong> transacciones
+                </>
+              )}
             </Typography>
           </Box>
           <Button
@@ -307,6 +313,7 @@ export default function AvailableFiles() {
                   <TableRow>
                     <TableCell sx={{ minWidth: 240 }}>Archivo</TableCell>
                     <TableCell>Fecha</TableCell>
+                    <TableCell align="right">Transacciones</TableCell>
                     <TableCell align="right">Tamaño</TableCell>
                     <TableCell align="right">Acciones</TableCell>
                   </TableRow>
@@ -314,7 +321,7 @@ export default function AvailableFiles() {
                 <TableBody>
                   {visibleFiles.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} align="center" sx={{ py: 5 }}>
+                      <TableCell colSpan={5} align="center" sx={{ py: 5 }}>
                         <Typography variant="body2" color="text.secondary">
                           No se encontraron archivos con el término &quot;{searchQuery}&quot;
                         </Typography>
@@ -327,6 +334,7 @@ export default function AvailableFiles() {
                         hover
                         sx={{ '&:last-child td': { borderBottom: 0 } }}
                       >
+                        {/* Injected column for transaction count */}
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
                             <DescriptionIcon
@@ -338,6 +346,11 @@ export default function AvailableFiles() {
                         <TableCell>
                           <Typography variant="body2" color="text.secondary">
                             {file.date || '-'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2" color="text.secondary">
+                            {file.totalRows != null ? file.totalRows.toLocaleString() : '-'}
                           </Typography>
                         </TableCell>
                         <TableCell align="right">
