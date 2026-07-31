@@ -15,6 +15,8 @@ import {
   IconButton,
   Tooltip,
   Chip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -26,12 +28,15 @@ import StatusBadge from '../common/StatusBadge';
 import EmptyState from '../common/EmptyState';
 import LoadingState from '../common/LoadingState';
 import ErrorState from '../common/ErrorState';
+import CardList from '../common/CardList';
 import RejectReasonModal from '../transactions/RejectReasonModal';
 import EditAmountModal from '../transactions/EditAmountModal';
 
 export default function TransactionList() {
   const { fileId } = useParams();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { transactions, fileInfo, loading, error, fetchTransactions, updateAmount } = useTransactions();
   const [rejectionModal, setRejectionModal] = useState({ open: false, transaction: null });
   const [editModal, setEditModal] = useState({ open: false, transaction: null });
@@ -46,6 +51,59 @@ export default function TransactionList() {
       setEditModal({ open: false, transaction: null });
     },
     [updateAmount]
+  );
+
+  const renderCards = (
+    <CardList
+      items={transactions}
+      renderItem={(tx) => (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, minWidth: 0 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-all' }}>
+              {tx.account}
+            </Typography>
+            <StatusBadge status={tx.status} />
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              {tx.date}
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{ fontWeight: 600 }}
+              color={tx.status === 'REJECTED' ? 'error.main' : 'text.primary'}
+            >
+              {formatCurrency(tx.amount)}
+            </Typography>
+          </Box>
+          {tx.status === 'REJECTED' && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                color="error"
+                size="small"
+                startIcon={<VisibilityIcon />}
+                onClick={() => setRejectionModal({ open: true, transaction: tx })}
+                sx={{ minHeight: 44 }}
+              >
+                Ver motivo de rechazo
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                size="small"
+                startIcon={<EditIcon />}
+                onClick={() => setEditModal({ open: true, transaction: tx })}
+                sx={{ minHeight: 44 }}
+              >
+                Editar monto
+              </Button>
+            </Box>
+          )}
+        </>
+      )}
+    />
   );
 
   return (
@@ -116,7 +174,10 @@ export default function TransactionList() {
                 </Alert>
               </Box>
             )}
-            <TableContainer>
+            {isMobile ? (
+              renderCards
+            ) : (
+              <TableContainer>
             <Table aria-label="Tabla de transacciones">
               <TableHead>
                 <TableRow>
@@ -196,9 +257,10 @@ export default function TransactionList() {
                     </TableCell>
                   </TableRow>
                 ))}
-              </TableBody>
+                </TableBody>
             </Table>
           </TableContainer>
+            )}
           </>
         )}
       </Paper>

@@ -18,6 +18,8 @@ import {
   TableSortLabel,
   IconButton,
   Tooltip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -29,6 +31,8 @@ import StatusBadge from '../common/StatusBadge';
 import EmptyState from '../common/EmptyState';
 import LoadingState from '../common/LoadingState';
 import ErrorState from '../common/ErrorState';
+import CardList from '../common/CardList';
+import { formatDate } from '../../utils/format';
 
 function ResultCell({ total, processed, rejected }) {
   const processedPct = total ? (processed / total) * 100 : 0;
@@ -73,6 +77,8 @@ ResultCell.propTypes = {
 export default function ProcessedFiles() {
   const { processedFiles, processedLoading: loading, processedError: error, fetchProcessed } = useFiles();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [searchQuery, setSearchQuery] = useState('');
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('processedDate');
@@ -106,6 +112,43 @@ export default function ProcessedFiles() {
     direction: orderBy === property ? order : 'asc',
     onClick: () => handleRequestSort(property),
   });
+
+  const renderCards = (
+    <CardList
+      items={visibleFiles}
+      renderItem={(file) => (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 1, minWidth: 0 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-all' }}>
+              <DescriptionIcon
+                sx={{ color: 'primary.light', fontSize: 20, verticalAlign: 'middle', mr: 0.5 }}
+              />
+              {file.filename}
+            </Typography>
+            <StatusBadge status={file.status} />
+          </Box>
+          <Typography variant="body2" color="text.secondary">
+            Procesado el {formatDate(file.processedDate)}
+          </Typography>
+          <ResultCell
+            total={file.totalTransactions}
+            processed={file.processedCount}
+            rejected={file.rejectedCount}
+          />
+          <Button
+            variant="outlined"
+            size="small"
+            fullWidth
+            startIcon={<VisibilityIcon />}
+            onClick={() => navigate(`/transactions/${file.id}`)}
+            sx={{ minHeight: 44 }}
+          >
+            Ver transacciones
+          </Button>
+        </>
+      )}
+    />
+  );
 
   return (
     <Box>
@@ -189,7 +232,18 @@ export default function ProcessedFiles() {
                 }}
               />
             </Box>
-            <TableContainer>
+            {isMobile ? (
+              visibleFiles.length === 0 ? (
+                <Box sx={{ p: 4, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No se encontraron archivos con el término &quot;{searchQuery}&quot;
+                  </Typography>
+                </Box>
+              ) : (
+                renderCards
+              )
+            ) : (
+              <TableContainer>
               <Table aria-label="Tabla de archivos procesados">
                 <TableHead>
                   <TableRow>
@@ -230,7 +284,7 @@ export default function ProcessedFiles() {
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" color="text.secondary">
-                            {file.processedDate || '-'}
+                            {formatDate(file.processedDate)}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -261,6 +315,7 @@ export default function ProcessedFiles() {
                 </TableBody>
               </Table>
             </TableContainer>
+            )}
           </>
         )}
       </Paper>
