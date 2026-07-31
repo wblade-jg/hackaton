@@ -11,6 +11,7 @@ import {
 import PropTypes from 'prop-types';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import StatusBadge from '../common/StatusBadge';
+import { formatCurrency } from '../../utils/format';
 
 export default function RejectReasonModal({ open, transaction, onClose }) {
   if (!transaction) return null;
@@ -62,7 +63,7 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
               Monto Original
             </Typography>
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-              ${Number(transaction.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              {formatCurrency(transaction.amount)}
             </Typography>
           </Box>
 

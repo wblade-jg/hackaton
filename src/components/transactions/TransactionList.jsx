@@ -21,6 +21,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { useTransactions } from '../../hooks/useTransactions';
+import { formatCurrency, formatDate } from '../../utils/format';
 import StatusBadge from '../common/StatusBadge';
 import EmptyState from '../common/EmptyState';
 import LoadingState from '../common/LoadingState';
@@ -64,7 +65,7 @@ export default function TransactionList() {
           </Typography>
           {fileInfo && (
             <Typography variant="body2" color="text.secondary">
-              Procesado el {fileInfo.processedDate} &middot; {transactions.length} transacciones
+              Procesado el {formatDate(fileInfo.processedDate)} &middot; {transactions.length} transacciones
             </Typography>
           )}
         </Box>
@@ -159,7 +160,7 @@ export default function TransactionList() {
                         sx={{ fontWeight: 600 }}
                         color={tx.status === 'REJECTED' ? 'error.main' : 'text.primary'}
                       >
-                        ${Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        {formatCurrency(tx.amount)}
                       </Typography>
                     </TableCell>
                     <TableCell>
