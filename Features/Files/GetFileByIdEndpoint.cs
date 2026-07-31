@@ -1,5 +1,7 @@
 using hackaton.Common;
+using hackaton.Common.Validation;
 using hackaton.Infrastructure.Persistence;
+using hackaton.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace hackaton.Features.Files;
@@ -32,7 +34,10 @@ public class GetFileByIdEndpoint : IEndpoint
                         t.Monto,
                         t.Fecha,
                         t.Estado.ToString(),
-                        t.MotivoRechazo))
+                        t.MotivoRechazo,
+                        t.Estado == TransaccionEstado.RECHAZADA
+                            && (t.MotivoRechazo == RechazoMotivos.MontoNoNumerico
+                                || t.MotivoRechazo == RechazoMotivos.MontoNoPositivo)))
                     .ToList()
             ))
             .SingleOrDefaultAsync();
@@ -59,5 +64,6 @@ public class GetFileByIdEndpoint : IEndpoint
         decimal Monto,
         DateTime Fecha,
         string Estado,
-        string? MotivoRechazo);
+        string? MotivoRechazo,
+        bool EsEditable);
 }

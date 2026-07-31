@@ -26,8 +26,8 @@ public class UpdateTransactionEndpoint : IEndpoint
         if (transaccion is null)
             return Results.NotFound(new { Message = $"No se encontró la transacción con ID {id}" });
 
-        if (!transaccion.EsModificable)
-            return Results.BadRequest(new { Message = "Solo se puede modificar una transacción rechazada." });
+        if (!transaccion.EsEditable)
+            return Results.BadRequest(new { Message = "Solo se puede ajustar el monto de una transacción rechazada por motivo de monto." });
 
         transaccion.Monto = request.Monto;
 
@@ -51,7 +51,8 @@ public class UpdateTransactionEndpoint : IEndpoint
             transaccion.Monto,
             transaccion.Fecha,
             transaccion.Estado.ToString(),
-            transaccion.MotivoRechazo
+            transaccion.MotivoRechazo,
+            transaccion.EsEditable
         ));
     }
 
@@ -63,5 +64,6 @@ public class UpdateTransactionEndpoint : IEndpoint
         decimal Monto,
         DateTime Fecha,
         string Estado,
-        string? MotivoRechazo);
+        string? MotivoRechazo,
+        bool EsEditable);
 }

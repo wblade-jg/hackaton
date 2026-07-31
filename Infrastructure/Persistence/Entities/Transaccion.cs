@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using hackaton.Common.Validation;
 
 namespace hackaton.Infrastructure.Persistence.Entities;
 
@@ -24,19 +25,12 @@ public class Transaccion
 
     public ArchivoProcesado ArchivoProcesado { get; set; } = null!;
 
-    /// <summary>
-    /// Marca la transacción como aprobada. Limpia cualquier motivo de rechazo previo.
-    /// </summary>
     public void Aprobar()
     {
         Estado = TransaccionEstado.PROCESADO;
         MotivoRechazo = null;
     }
 
-    /// <summary>
-    /// Marca la transacción como rechazada con su motivo de rechazo.
-    /// </summary>
-    /// <param name="motivo">Descripción legible del motivo del rechazo.</param>
     public void Rechazar(string motivo)
     {
         if (string.IsNullOrWhiteSpace(motivo))
@@ -46,8 +40,7 @@ public class Transaccion
         MotivoRechazo = motivo;
     }
 
-    /// <summary>
-    /// Indica si la transacción puede ser modificada (solo las rechazadas son editables).
-    /// </summary>
     public bool EsModificable => Estado == TransaccionEstado.RECHAZADA;
+
+    public bool EsEditable => EsModificable && RechazoMotivos.EsMotivoDeMonto(MotivoRechazo);
 }
