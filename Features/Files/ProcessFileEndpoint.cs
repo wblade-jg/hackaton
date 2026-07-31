@@ -22,15 +22,24 @@ public class ProcessFileEndpoint : IEndpoint
         IFileScanner scanner,
         IOptions<FileScannerOptions> options,
         AppDbContext db,
-        CsvFileProcessor processor)
+        CsvFileProcessor processor,
+        ILogger<ProcessFileEndpoint> logger)
     {
         if (string.IsNullOrWhiteSpace(request?.NombreArchivo))
+        {
+            logger.LogWarning("Petición POST /files/process rechazada: NombreArchivo no especificado.");
             return TypedResults.BadRequest(new ApiError("El nombre del archivo es obligatorio."));
+        }
+
+        logger.LogInformation("Solicitada acción procesar archivo: {NombreArchivo}", request.NombreArchivo);
 
         var alreadyProcessed = await db.ArchivosProcesados
             .AnyAsync(a => a.NombreArchivo == request.NombreArchivo);
         if (alreadyProcessed)
+        {
+            logger.LogWarning("Intento de re-procesar archivo ya existente en base de datos: {NombreArchivo}", request.NombreArchivo);
             return TypedResults.Conflict(new ApiError($"El archivo '{request.NombreArchivo}' ya fue procesado."));
+        }
 
         FileEntry? fileEntry;
         try
@@ -40,6 +49,7 @@ public class ProcessFileEndpoint : IEndpoint
         }
         catch (DirectoryNotFoundException ex)
         {
+            logger.LogError(ex, "Error de configuración al buscar archivos en el directorio de entrada.");
             return TypedResults.Problem(
                 title: "Error de configuración",
                 detail: ex.Message,
@@ -47,7 +57,10 @@ public class ProcessFileEndpoint : IEndpoint
         }
 
         if (fileEntry is null)
+        {
+            logger.LogWarning("Archivo no encontrado en directorio de entrada: {NombreArchivo}", request.NombreArchivo);
             return TypedResults.NotFound(new ApiError($"No se encontró el archivo '{request.NombreArchivo}' en el directorio de entrada."));
+        }
 
         var fullPath = Path.Combine(options.Value.InputDirectory, fileEntry.NombreArchivo);
 
@@ -57,9 +70,11 @@ public class ProcessFileEndpoint : IEndpoint
         {
             db.ArchivosProcesados.Add(archivo);
             await db.SaveChangesAsync();
+            logger.LogInformation("Archivo {NombreArchivo} guardado exitosamente en BD con ID {Id}.", archivo.NombreArchivo, archivo.Id);
         }
-        catch (DbUpdateException)
+        catch (DbUpdateException ex)
         {
+            logger.LogError(ex, "Error de concurrencia al guardar lote {NombreArchivo} en BD.", request.NombreArchivo);
             return TypedResults.Conflict(new ApiError($"El archivo '{request.NombreArchivo}' ya fue procesado."));
         }
 
