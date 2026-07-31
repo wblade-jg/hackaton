@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
@@ -18,6 +18,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import HistoryIcon from '@mui/icons-material/History';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import useDocumentTitle from '../../hooks/useDocumentTitle';
 
 const DRAWER_WIDTH = 260;
 
@@ -32,6 +33,15 @@ export default function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const pageTitle = useMemo(() => {
+    if (location.pathname === '/') return 'Archivos Disponibles';
+    if (location.pathname === '/processed') return 'Archivos Procesados';
+    if (location.pathname.startsWith('/transactions/')) return 'Transacciones';
+    return 'Página no encontrada';
+  }, [location.pathname]);
+
+  useDocumentTitle(pageTitle);
 
   const drawerContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -159,7 +169,7 @@ export default function AppLayout() {
               </IconButton>
             )}
             <Typography variant="h6" color="text.primary" sx={{ fontSize: '1.1rem' }}>
-              {navItems.find((i) => i.path === location.pathname)?.label || 'FinBatch'}
+              {pageTitle}
             </Typography>
           </Toolbar>
         </AppBar>
