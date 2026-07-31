@@ -1,4 +1,5 @@
 using hackaton.Common.Validation;
+using hackaton.Features.Files;
 using hackaton.Infrastructure.FileSystem;
 using hackaton.Infrastructure.Persistence;
 using hackaton.Infrastructure.Routing;
@@ -16,6 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IFileScanner, FileScanner>();
 builder.Services.AddScoped<TransactionValidator>();
+builder.Services.AddScoped<CsvFileProcessor>();
 
 var app = builder.Build();
 

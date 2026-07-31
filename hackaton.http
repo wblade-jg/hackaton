@@ -1,6 +1,39 @@
 @hackaton_HostAddress = http://localhost:5138
 
-GET {{hackaton_HostAddress}}/weatherforecast/
+### Listar archivos disponibles en /input
+GET {{hackaton_HostAddress}}/files/available
 Accept: application/json
+
+###
+
+### Listar archivos procesados
+GET {{hackaton_HostAddress}}/files
+Accept: application/json
+
+###
+
+### Detalle de un archivo procesado (incluye transacciones)
+GET {{hackaton_HostAddress}}/files/1
+Accept: application/json
+
+###
+
+### Procesar un archivo del directorio /input
+POST {{hackaton_HostAddress}}/files/process
+Content-Type: application/json
+
+{
+  "nombreArchivo": "transactions_01072026.csv"
+}
+
+###
+
+### Corregir monto de una transacción rechazada
+POST {{hackaton_HostAddress}}/transactions/1
+Content-Type: application/json
+
+{
+  "monto": 1500.50
+}
 
 ###

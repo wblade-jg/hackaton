@@ -22,10 +22,6 @@ public class ArchivoProcesado
 
     public List<Transaccion> Transacciones { get; set; } = [];
 
-    /// <summary>
-    /// Registra que una transacción previamente rechazada fue aprobada.
-    /// Actualiza los contadores y recalcula el estado del archivo.
-    /// </summary>
     public void RegistrarAprobada()
     {
         if (Rechazados <= 0)
@@ -36,10 +32,6 @@ public class ArchivoProcesado
         RecalcularEstado();
     }
 
-    /// <summary>
-    /// Registra que una transacción fue rechazada durante el procesamiento.
-    /// Actualiza los contadores y recalcula el estado del archivo.
-    /// </summary>
     public void RegistrarRechazada()
     {
         Rechazados++;
@@ -47,11 +39,26 @@ public class ArchivoProcesado
         RecalcularEstado();
     }
 
-    /// <summary>
-    /// Recalcula el estado del archivo en función de sus contadores actuales.
-    /// PROCESADO: todas las transacciones aprobadas.
-    /// CON_ERRORES: al menos una rechazada.
-    /// </summary>
+    public void RegistrarNuevaAprobada()
+    {
+        Procesados++;
+        RecalcularEstado();
+    }
+
+    public void RegistrarNuevaRechazada()
+    {
+        Rechazados++;
+        RecalcularEstado();
+    }
+
+    public void MarcarFallido()
+    {
+        TotalRegistros = 0;
+        Procesados = 0;
+        Rechazados = 0;
+        Estado = ArchivoEstado.FALLIDO;
+    }
+
     private void RecalcularEstado()
     {
         Estado = Rechazados == 0 ? ArchivoEstado.PROCESADO : ArchivoEstado.CON_ERRORES;

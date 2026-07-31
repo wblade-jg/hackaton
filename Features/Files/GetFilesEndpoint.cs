@@ -15,7 +15,7 @@ public class GetFilesEndpoint : IEndpoint
     {
         var files = await db.ArchivosProcesados
             .OrderByDescending(a => a.FechaProceso)
-            .Select(a => new Response(
+            .Select(a => new ArchivoProcesadoResponse(
                 a.Id,
                 a.NombreArchivo,
                 a.FechaProceso,
@@ -27,13 +27,4 @@ public class GetFilesEndpoint : IEndpoint
 
         return Results.Ok(files);
     }
-
-    private record Response(
-        int Id,
-        string NombreArchivo,
-        DateTime FechaProceso,
-        string Estado,
-        int TotalRegistros,
-        int Procesados,
-        int Rechazados);
 }
