@@ -1,4 +1,4 @@
-namespace hackaton.Features.Files;
+namespace hackaton.Features.Files.DTOs;
 
 public record FileDetailResponse(
     int Id,

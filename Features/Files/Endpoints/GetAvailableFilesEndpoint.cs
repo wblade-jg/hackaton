@@ -1,10 +1,11 @@
 using hackaton.Common;
+using hackaton.Features.Files.DTOs;
 using hackaton.Infrastructure.FileSystem;
 using hackaton.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace hackaton.Features.Files;
+namespace hackaton.Features.Files.Endpoints;
 
 public class GetAvailableFilesEndpoint : IEndpoint
 {

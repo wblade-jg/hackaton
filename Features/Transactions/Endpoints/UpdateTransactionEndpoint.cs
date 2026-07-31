@@ -1,12 +1,13 @@
 using hackaton.Common;
 using hackaton.Common.Validation;
+using hackaton.Features.Transactions.DTOs;
 using hackaton.Infrastructure.Persistence;
 using hackaton.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-namespace hackaton.Features.Transactions;
+namespace hackaton.Features.Transactions.Endpoints;
 
 public class UpdateTransactionEndpoint : IEndpoint
 {

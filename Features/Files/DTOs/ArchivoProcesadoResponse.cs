@@ -1,6 +1,6 @@
 using hackaton.Infrastructure.Persistence.Entities;
 
-namespace hackaton.Features.Files;
+namespace hackaton.Features.Files.DTOs;
 
 public record ArchivoProcesadoResponse(
     int Id,

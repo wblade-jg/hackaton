@@ -1,11 +1,13 @@
 using hackaton.Common;
+using hackaton.Features.Files.DTOs;
+using hackaton.Features.Files.Services;
 using hackaton.Infrastructure.FileSystem;
 using hackaton.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace hackaton.Features.Files;
+namespace hackaton.Features.Files.Endpoints;
 
 public class ProcessFileEndpoint : IEndpoint
 {

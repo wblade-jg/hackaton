@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text;
 
-namespace hackaton.Features.Files;
+namespace hackaton.Features.Files.Services;
 
 public class CsvFileProcessor
 {

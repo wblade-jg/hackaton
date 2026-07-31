@@ -1,4 +1,4 @@
-namespace hackaton.Features.Transactions;
+namespace hackaton.Features.Transactions.DTOs;
 
 public record TransaccionResponse(
     int Id,

@@ -1,3 +1,3 @@
-namespace hackaton.Features.Files;
+namespace hackaton.Features.Files.DTOs;
 
 public record ProcessFileRequest(string? NombreArchivo);

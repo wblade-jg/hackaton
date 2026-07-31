@@ -1,11 +1,12 @@
 using hackaton.Common;
 using hackaton.Common.Validation;
+using hackaton.Features.Files.DTOs;
 using hackaton.Infrastructure.Persistence;
 using hackaton.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
-namespace hackaton.Features.Files;
+namespace hackaton.Features.Files.Endpoints;
 
 public class GetFileByIdEndpoint : IEndpoint
 {
