@@ -52,18 +52,17 @@ export const mockApi = {
 
     const transactions = Array.from({ length: txCount }, (_, i) => {
       const isRejected = i >= processedCount;
+      const rejectionReason = isRejected
+        ? reasons[Math.floor(Math.random() * reasons.length)]
+        : undefined;
+      const isEditable = isRejected && Boolean(rejectionReason && (rejectionReason.includes("monto") || rejectionReason.includes("Monto")));
       return {
         id: nextTxId++,
         account: String(Math.floor(1000000000 + Math.random() * 9000000000)),
         date: file.date,
         amount: Math.round(Math.random() * 10000 * 100) / 100,
         status: isRejected ? "REJECTED" : "PROCESSED",
-        ...(isRejected
-          ? {
-              rejectionReason:
-                reasons[Math.floor(Math.random() * reasons.length)],
-            }
-          : {}),
+        ...(isRejected ? { rejectionReason, isEditable } : {}),
       };
     });
 

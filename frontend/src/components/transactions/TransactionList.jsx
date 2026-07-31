@@ -252,16 +252,18 @@ export default function TransactionList() {
                 >
                   Ver motivo de rechazo
                 </Button>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  size="small"
-                  startIcon={<EditIcon />}
-                  onClick={() => setEditModal({ open: true, transaction: tx })}
-                  sx={{ minHeight: 44 }}
-                >
-                  Editar monto
-                </Button>
+                {tx.isEditable && (
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="small"
+                    startIcon={<EditIcon />}
+                    onClick={() => setEditModal({ open: true, transaction: tx })}
+                    sx={{ minHeight: 44 }}
+                  >
+                    Editar monto
+                  </Button>
+                )}
               </Box>
             )}
           </>
@@ -582,7 +584,7 @@ export default function TransactionList() {
                                       </IconButton>
                                     </Tooltip>
                                   )}
-                                {tx.status === "REJECTED" && (
+                                {tx.status === "REJECTED" && tx.isEditable && (
                                   <Tooltip
                                     title="Editar monto y reprocesar"
                                     arrow
