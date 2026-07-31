@@ -106,12 +106,12 @@ export default function AvailableFiles() {
               sx={{ '&:last-child td': { borderBottom: 0 } }}
             >
               <TableCell>
-                <Box display="flex" alignItems="center" gap={1}>
-                  <DescriptionIcon sx={{ color: 'primary.light', fontSize: 20 }} />
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {file.filename}
-                  </Typography>
-                </Box>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  <DescriptionIcon
+                    sx={{ color: 'primary.light', fontSize: 20, verticalAlign: 'middle', mr: 0.5 }}
+                  />
+                  {file.filename}
+                </Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body2" color="text.secondary">
@@ -142,16 +142,16 @@ export default function AvailableFiles() {
             gap: 1.5,
           }}
         >
-          <Box display="flex" alignItems="flex-start" gap={1}>
-            <DescriptionIcon sx={{ color: 'primary.light', fontSize: 22, mt: 0.25 }} />
-            <Box sx={{ minWidth: 0 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-all' }}>
-                {file.filename}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {file.date || '-'}
-              </Typography>
-            </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, wordBreak: 'break-all' }}>
+              <DescriptionIcon
+                sx={{ color: 'primary.light', fontSize: 20, verticalAlign: 'middle', mr: 0.5 }}
+              />
+              {file.filename}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {file.date || '-'}
+            </Typography>
           </Box>
           <Button
             variant="outlined"
