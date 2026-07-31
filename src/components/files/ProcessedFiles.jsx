@@ -23,6 +23,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import HistoryIcon from '@mui/icons-material/History';
 import SearchIcon from '@mui/icons-material/Search';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { useFiles } from '../../hooks/useFiles';
 import StatusBadge from '../common/StatusBadge';
 import EmptyState from '../common/EmptyState';
@@ -219,9 +220,12 @@ export default function ProcessedFiles() {
                         sx={{ '&:last-child td': { borderBottom: 0 } }}
                       >
                         <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {file.filename}
-                          </Typography>
+                          <Box display="flex" alignItems="center" gap={1}>
+                            <DescriptionIcon sx={{ color: 'primary.light', fontSize: 20 }} />
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {file.filename}
+                            </Typography>
+                          </Box>
                         </TableCell>
                         <TableCell>
                           <Typography variant="body2" color="text.secondary">
