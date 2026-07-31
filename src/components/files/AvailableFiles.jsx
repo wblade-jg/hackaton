@@ -188,6 +188,8 @@ export default function AvailableFiles() {
           startIcon={<RefreshIcon />}
           onClick={fetchAvailable}
           disabled={loading}
+          loading={loading}
+          loadingPosition="start"
           sx={{ ml: 'auto', mr: 0 }}
           aria-label="Actualizar lista de archivos"
         >
@@ -297,7 +299,7 @@ export default function AvailableFiles() {
           sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}
         >
           {result && result.rejected > 0 ? (
-            <ReportProblemIcon color="warning" />
+            <ReportProblemIcon sx={{ color: 'warning.dark' }} />
           ) : (
             <CheckCircleIcon color="success" />
           )}

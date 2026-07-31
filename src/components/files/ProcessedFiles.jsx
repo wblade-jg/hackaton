@@ -61,7 +61,7 @@ function ResultCell({ total, processed, rejected }) {
         </Typography>{' '}
         &middot;{' '}
         <Typography component="span" variant="body2" color="error.main" sx={{ fontWeight: 600 }}>
-          {rejected} rech
+          {rejected} rechazadas
         </Typography>
       </Typography>
     </Box>
@@ -166,6 +166,8 @@ export default function ProcessedFiles() {
           startIcon={<RefreshIcon />}
           onClick={fetchProcessed}
           disabled={loading}
+          loading={loading}
+          loadingPosition="start"
           sx={{ ml: 'auto', mr: 0 }}
           aria-label="Actualizar lista de archivos procesados"
         >
