@@ -251,7 +251,7 @@ export default function AvailableFiles() {
           {confirmFile && (
             <Box display="flex" flexDirection="column" gap={1.5}>
               <Box>
-                <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                <Typography variant="body2" color="text.secondary" fontWeight={700}>
                   Archivo
                 </Typography>
                 <Typography variant="body1" fontWeight={600} sx={{ wordBreak: 'break-all' }}>
@@ -259,14 +259,14 @@ export default function AvailableFiles() {
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                <Typography variant="body2" color="text.secondary" fontWeight={700}>
                   Fecha
                 </Typography>
                 <Typography variant="body1">{confirmFile.date || '-'}</Typography>
               </Box>
               {confirmFile.size && (
                 <Box>
-                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                  <Typography variant="body2" color="text.secondary" fontWeight={700}>
                     Tamaño
                   </Typography>
                   <Typography variant="body1">{confirmFile.size}</Typography>

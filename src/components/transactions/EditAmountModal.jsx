@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
@@ -95,7 +96,7 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={700}>
               Cuenta
             </Typography>
             <Typography variant="body1" fontWeight={600}>
@@ -104,14 +105,14 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={700}>
               Fecha
             </Typography>
             <Typography variant="body1">{transaction.date}</Typography>
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={700}>
               Motivo de Rechazo
             </Typography>
             <Typography variant="body2" color="error.main">
@@ -164,3 +165,10 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
     </Dialog>
   );
 }
+
+EditAmountModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  transaction: PropTypes.object,
+  onClose: PropTypes.func.isRequired,
+  onSave: PropTypes.func.isRequired,
+};

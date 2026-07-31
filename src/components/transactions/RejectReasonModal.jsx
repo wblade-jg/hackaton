@@ -8,6 +8,7 @@ import {
   Typography,
   Divider,
 } from '@mui/material';
+import PropTypes from 'prop-types';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import StatusBadge from '../common/StatusBadge';
 
@@ -32,7 +33,7 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
       <DialogContent dividers>
         <Box display="flex" flexDirection="column" gap={2}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            <Typography variant="body2" color="text.secondary" fontWeight={700}>
               Estado
             </Typography>
             <StatusBadge status={transaction.status} />
@@ -41,7 +42,7 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
           <Divider />
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={700}>
               Número de Cuenta
             </Typography>
             <Typography variant="body1" fontWeight={600}>
@@ -50,14 +51,14 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={700}>
               Fecha de Transacción
             </Typography>
             <Typography variant="body1">{transaction.date || '-'}</Typography>
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={500}>
+            <Typography variant="body2" color="text.secondary" gutterBottom fontWeight={700}>
               Monto Original
             </Typography>
             <Typography variant="body1" fontWeight={600}>
@@ -76,7 +77,7 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
               borderColor: 'error.light',
             }}
           >
-            <Typography variant="body2" color="error.main" fontWeight={600} gutterBottom>
+            <Typography variant="body2" color="error.main" fontWeight={700} gutterBottom>
               Motivo de Rechazo
             </Typography>
             <Typography variant="body2" color="text.primary">
@@ -94,3 +95,9 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
     </Dialog>
   );
 }
+
+RejectReasonModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  transaction: PropTypes.object,
+  onClose: PropTypes.func.isRequired,
+};
