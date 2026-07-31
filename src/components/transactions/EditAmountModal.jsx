@@ -97,9 +97,9 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
 
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>
-              Cuenta
+              Nro Cuenta
             </Typography>
-            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+            <Typography variant="body1">
               {transaction.account}
             </Typography>
           </Box>
