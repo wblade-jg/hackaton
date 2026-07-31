@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -18,6 +19,8 @@ import {
   TableHead,
   TableRow,
   Snackbar,
+  TextField,
+  InputAdornment,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -26,10 +29,72 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import DescriptionIcon from '@mui/icons-material/Description';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import SearchIcon from '@mui/icons-material/Search';
 import { useFiles } from '../../hooks/useFiles';
+import { formatBytes } from '../../utils/format';
 import EmptyState from '../common/EmptyState';
-import LoadingState from '../common/LoadingState';
+import TableSkeleton from '../common/TableSkeleton';
 import ErrorState from '../common/ErrorState';
+import PageHeader from '../common/PageHeader';
+
+function ResultStations({ processed, rejected }) {
+  return (
+    <Box display="flex" flexWrap="wrap" alignItems="stretch">
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 140,
+          p: 2,
+          borderTop: '3px solid',
+          borderColor: 'success.main',
+          backgroundColor: '#F2FAF5',
+          textAlign: 'center',
+        }}
+        aria-label={`${processed} transacciones procesadas`}
+      >
+        <Typography variant="h5" sx={{ fontWeight: 700, color: 'success.dark' }}>
+          {processed}
+        </Typography>
+        <Typography variant="label" sx={{ color: 'success.dark' }}>
+          Procesadas
+        </Typography>
+      </Box>
+      <Box
+        sx={{
+          width: { xs: 0, sm: 28 },
+          borderBottom: '3px solid',
+          borderColor: 'divider',
+          display: { xs: 'none', sm: 'block' },
+          my: 2,
+        }}
+      />
+      <Box
+        sx={{
+          flex: 1,
+          minWidth: 140,
+          p: 2,
+          borderTop: '3px solid',
+          borderColor: 'error.main',
+          backgroundColor: '#FDF3F3',
+          textAlign: 'center',
+        }}
+        aria-label={`${rejected} transacciones rechazadas`}
+      >
+        <Typography variant="h5" sx={{ fontWeight: 700, color: 'error.dark' }}>
+          {rejected}
+        </Typography>
+        <Typography variant="label" sx={{ color: 'error.dark' }}>
+          Rechazadas
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
+
+ResultStations.propTypes = {
+  processed: PropTypes.number.isRequired,
+  rejected: PropTypes.number.isRequired,
+};
 
 export default function AvailableFiles() {
   const { availableFiles, availableLoading: loading, availableError: error, fetchAvailable, processFile } = useFiles();
@@ -41,12 +106,19 @@ export default function AvailableFiles() {
   const [processingFile, setProcessingFile] = useState(null);
   const [result, setResult] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchAvailable();
   }, [fetchAvailable]);
 
   const isProcessing = processingFile !== null;
+
+  const visibleFiles = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return availableFiles;
+    return availableFiles.filter((f) => f.filename.toLowerCase().includes(query));
+  }, [availableFiles, searchQuery]);
 
   const runProcess = async (filename) => {
     setProcessingFile(filename);
@@ -88,47 +160,9 @@ export default function AvailableFiles() {
     </Button>
   );
 
-  const renderTable = (
-    <TableContainer>
-      <Table aria-label="Tabla de archivos disponibles">
-        <TableHead>
-          <TableRow>
-            <TableCell>Nombre del Archivo</TableCell>
-            <TableCell>Fecha</TableCell>
-            <TableCell align="right">Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {availableFiles.map((file, index) => (
-            <TableRow
-              key={file.filename || index}
-              hover
-              sx={{ '&:last-child td': { borderBottom: 0 } }}
-            >
-              <TableCell>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  <DescriptionIcon
-                    sx={{ color: 'primary.light', fontSize: 20, verticalAlign: 'middle', mr: 0.5 }}
-                  />
-                  {file.filename}
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body2" color="text.secondary">
-                  {file.date || '-'}
-                </Typography>
-              </TableCell>
-              <TableCell align="right">{processButton(file)}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  );
-
   const renderCards = (
     <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-      {availableFiles.map((file, index) => (
+      {visibleFiles.map((file, index) => (
         <Box
           key={file.filename || index}
           sx={{
@@ -150,7 +184,7 @@ export default function AvailableFiles() {
               {file.filename}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {file.date || '-'}
+              {file.date || '-'} &middot; {formatBytes(file.size)}
             </Typography>
           </Box>
           <Button
@@ -174,35 +208,32 @@ export default function AvailableFiles() {
 
   return (
     <Box>
-      <Box display="flex" alignItems="flex-start" mb={3} sx={{ pl: { xs: 2, sm: 3 } }}>
-        <Box>
-          <Typography variant="h4" gutterBottom>
-            Archivos Disponibles
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Selecciona un archivo para procesar las transacciones entrantes
-          </Typography>
-        </Box>
-        <Button
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          onClick={fetchAvailable}
-          disabled={loading}
-          loading={loading}
-          loadingPosition="start"
-          sx={{ ml: 'auto', mr: 0 }}
-          aria-label="Actualizar lista de archivos"
-        >
-          Actualizar
-        </Button>
-      </Box>
+      <PageHeader
+        title="Archivos Disponibles"
+        subtitle="Selecciona un archivo para procesar las transacciones entrantes"
+        action={
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={fetchAvailable}
+            disabled={loading}
+            loading={loading}
+            loadingPosition="start"
+            aria-label="Actualizar lista de archivos"
+          >
+            Actualizar
+          </Button>
+        }
+      />
 
-      <Paper sx={{ mx: { xs: 2, sm: 3 } }}>
-        {loading && availableFiles.length === 0 ? (
-          <LoadingState message="Buscando archivos disponibles..." />
-        ) : error && availableFiles.length === 0 ? (
+      {loading && availableFiles.length === 0 ? (
+        <TableSkeleton rows={5} columns={4} />
+      ) : error && availableFiles.length === 0 ? (
+        <Paper sx={{ mx: { xs: 2, sm: 3 } }}>
           <ErrorState message={error} onRetry={fetchAvailable} />
-        ) : availableFiles.length === 0 ? (
+        </Paper>
+      ) : availableFiles.length === 0 ? (
+        <Paper sx={{ mx: { xs: 2, sm: 3 } }}>
           <EmptyState
             icon={DescriptionIcon}
             title="No hay archivos disponibles"
@@ -213,27 +244,107 @@ export default function AvailableFiles() {
               </Button>
             }
           />
-        ) : (
-          <>
-            {error && availableFiles.length > 0 && (
-              <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2 }}>
-                <Alert
-                  severity="error"
-                  variant="outlined"
-                  action={
-                    <Button color="error" size="small" onClick={fetchAvailable}>
-                      Reintentar
-                    </Button>
-                  }
-                >
-                  No se pudo actualizar la lista: {error}
-                </Alert>
+        </Paper>
+      ) : (
+        <Paper sx={{ mx: { xs: 2, sm: 3 } }}>
+          {error && availableFiles.length > 0 && (
+            <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2 }}>
+              <Alert
+                severity="error"
+                variant="outlined"
+                action={
+                  <Button color="error" size="small" onClick={fetchAvailable}>
+                    Reintentar
+                  </Button>
+                }
+              >
+                No se pudo actualizar la lista: {error}
+              </Alert>
+            </Box>
+          )}
+          <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2, pb: 1 }}>
+            <TextField
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar por nombre de archivo..."
+              size="small"
+              fullWidth
+              sx={{ maxWidth: 340 }}
+              aria-label="Buscar archivos disponibles"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+          {isMobile ? (
+            visibleFiles.length === 0 ? (
+              <Box sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  No se encontraron archivos con el término &quot;{searchQuery}&quot;
+                </Typography>
               </Box>
-            )}
-            {isMobile ? renderCards : renderTable}
-          </>
-        )}
-      </Paper>
+            ) : (
+              renderCards
+            )
+          ) : (
+            <TableContainer>
+              <Table aria-label="Tabla de archivos disponibles">
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ minWidth: 240 }}>Archivo</TableCell>
+                    <TableCell>Fecha</TableCell>
+                    <TableCell align="right">Tamaño</TableCell>
+                    <TableCell align="right">Acciones</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {visibleFiles.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} align="center" sx={{ py: 5 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          No se encontraron archivos con el término &quot;{searchQuery}&quot;
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    visibleFiles.map((file, index) => (
+                      <TableRow
+                        key={file.filename || index}
+                        hover
+                        sx={{ '&:last-child td': { borderBottom: 0 } }}
+                      >
+                        <TableCell>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            <DescriptionIcon
+                              sx={{ color: 'primary.light', fontSize: 20, verticalAlign: 'middle', mr: 1 }}
+                            />
+                            {file.filename}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {file.date || '-'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2" color="text.secondary">
+                            {formatBytes(file.size)}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">{processButton(file)}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Paper>
+      )}
 
       <Dialog
         open={!!confirmFile}
@@ -253,7 +364,7 @@ export default function AvailableFiles() {
           {confirmFile && (
             <Box display="flex" flexDirection="column" gap={1.5}>
               <Box>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
+                <Typography variant="label" color="text.secondary" gutterBottom>
                   Archivo
                 </Typography>
                 <Typography variant="body1" sx={{ fontWeight: 600, wordBreak: 'break-all' }}>
@@ -261,17 +372,17 @@ export default function AvailableFiles() {
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
+                <Typography variant="label" color="text.secondary" gutterBottom>
                   Fecha
                 </Typography>
                 <Typography variant="body1">{confirmFile.date || '-'}</Typography>
               </Box>
               {confirmFile.size && (
                 <Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
+                  <Typography variant="label" color="text.secondary" gutterBottom>
                     Tamaño
                   </Typography>
-                  <Typography variant="body1">{confirmFile.size}</Typography>
+                  <Typography variant="body1">{formatBytes(confirmFile.size)}</Typography>
                 </Box>
               )}
             </Box>
@@ -314,40 +425,7 @@ export default function AvailableFiles() {
                 {result.filename}
               </Typography>
               <Divider />
-              <Box display="flex" gap={2} flexWrap="wrap">
-                <Box
-                  sx={{
-                    flex: 1,
-                    minWidth: 120,
-                    p: 2,
-                    borderRadius: 2,
-                    backgroundColor: 'success.main',
-                    color: 'success.contrastText',
-                    textAlign: 'center',
-                  }}
-                >
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                    {result.processed}
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>Procesadas</Typography>
-                </Box>
-                <Box
-                  sx={{
-                    flex: 1,
-                    minWidth: 120,
-                    p: 2,
-                    borderRadius: 2,
-                    backgroundColor: 'error.main',
-                    color: 'error.contrastText',
-                    textAlign: 'center',
-                  }}
-                >
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                    {result.rejected}
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>Rechazadas</Typography>
-                </Box>
-              </Box>
+              <ResultStations processed={result.processed} rejected={result.rejected} />
               {result.rejected > 0 && (
                 <Alert severity="warning" variant="outlined">
                   Hay transacciones rechazadas que requieren revisión. Puedes editar su monto para
@@ -384,6 +462,7 @@ export default function AvailableFiles() {
           severity={snackbar.severity}
           onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
           variant="filled"
+          role="status"
         >
           {snackbar.message}
         </Alert>

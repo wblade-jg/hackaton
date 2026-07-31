@@ -18,7 +18,6 @@ import {
   TableSortLabel,
   IconButton,
   Tooltip,
-  Chip,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -30,38 +29,58 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { useFiles } from '../../hooks/useFiles';
 import StatusBadge from '../common/StatusBadge';
 import EmptyState from '../common/EmptyState';
-import LoadingState from '../common/LoadingState';
+import TableSkeleton from '../common/TableSkeleton';
 import ErrorState from '../common/ErrorState';
+import PageHeader from '../common/PageHeader';
 import CardList from '../common/CardList';
 import { formatDate } from '../../utils/format';
 
-function ResultCell({ total, processed, rejected }) {
+const STATUS_FILTERS = [
+  { key: null, label: 'Todos', rule: 'primary.main' },
+  { key: 'EXITOSO', label: 'Exitosos', rule: 'success.main' },
+  { key: 'ERRORES', label: 'Con errores', rule: 'warning.dark' },
+  { key: 'CRITICO', label: 'Críticos', rule: 'error.main' },
+];
+
+function ResultLine({ total, processed, rejected }) {
   const processedPct = total ? (processed / total) * 100 : 0;
   const rejectedPct = total ? (rejected / total) * 100 : 0;
+  const showRing = processedPct > 0 && rejectedPct > 0;
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, minWidth: 160 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, minWidth: 190 }}>
       <Box
         role="img"
         aria-label={`${processed} de ${total} transacciones procesadas, ${rejected} rechazadas`}
-        sx={{
-          display: 'flex',
-          height: 6,
-          borderRadius: 3,
-          overflow: 'hidden',
-          backgroundColor: 'divider',
-          width: '100%',
-        }}
+        sx={{ position: 'relative', display: 'flex', height: 8, borderRadius: 2, overflow: 'hidden', backgroundColor: 'divider' }}
       >
-        <Box sx={{ width: `${processedPct}%`, backgroundColor: 'success.main' }} />
-        <Box sx={{ width: `${rejectedPct}%`, backgroundColor: 'error.main' }} />
+        <Box sx={{ width: `${processedPct}%`, backgroundColor: 'success.main', transition: 'width 0.25s ease-out' }} />
+        <Box sx={{ width: `${rejectedPct}%`, backgroundColor: 'error.main', transition: 'width 0.25s ease-out' }} />
+        {showRing && (
+          <Box
+            aria-hidden="true"
+            sx={{
+              position: 'absolute',
+              left: `calc(${processedPct}% - 5px)`,
+              top: '50%',
+              width: 10,
+              height: 10,
+              transform: 'translateY(-50%)',
+              borderRadius: '50%',
+              border: '2px solid',
+              borderColor: 'background.paper',
+              backgroundColor: 'divider',
+            }}
+          />
+        )}
       </Box>
       <Typography variant="body2" color="text.secondary">
         {total} total &middot;{' '}
-        <Typography component="span" variant="body2" color="success.main" sx={{ fontWeight: 600 }}>
+        <Typography component="span" variant="body2" color="success.dark" sx={{ fontWeight: 600 }}>
           {processed} OK
         </Typography>{' '}
         &middot;{' '}
-        <Typography component="span" variant="body2" color="error.main" sx={{ fontWeight: 600 }}>
+        <Typography component="span" variant="body2" color="error.dark" sx={{ fontWeight: 600 }}>
           {rejected} rechazadas
         </Typography>
       </Typography>
@@ -69,7 +88,7 @@ function ResultCell({ total, processed, rejected }) {
   );
 }
 
-ResultCell.propTypes = {
+ResultLine.propTypes = {
   total: PropTypes.number,
   processed: PropTypes.number,
   rejected: PropTypes.number,
@@ -144,7 +163,7 @@ export default function ProcessedFiles() {
           <Typography variant="body2" color="text.secondary">
             Procesado el {formatDate(file.processedDate)}
           </Typography>
-          <ResultCell
+          <ResultLine
             total={file.totalTransactions}
             processed={file.processedCount}
             rejected={file.rejectedCount}
@@ -166,35 +185,32 @@ export default function ProcessedFiles() {
 
   return (
     <Box>
-      <Box display="flex" alignItems="flex-start" mb={3} sx={{ pl: { xs: 2, sm: 3 } }}>
-        <Box>
-          <Typography variant="h4" gutterBottom>
-            Archivos Procesados
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Historial de todos los archivos de transacciones procesados
-          </Typography>
-        </Box>
-        <Button
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          onClick={fetchProcessed}
-          disabled={loading}
-          loading={loading}
-          loadingPosition="start"
-          sx={{ ml: 'auto', mr: 0 }}
-          aria-label="Actualizar lista de archivos procesados"
-        >
-          Actualizar
-        </Button>
-      </Box>
+      <PageHeader
+        title="Archivos Procesados"
+        subtitle="Historial de todos los archivos de transacciones procesados"
+        action={
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={fetchProcessed}
+            disabled={loading}
+            loading={loading}
+            loadingPosition="start"
+            aria-label="Actualizar lista de archivos procesados"
+          >
+            Actualizar
+          </Button>
+        }
+      />
 
-      <Paper sx={{ mx: { xs: 2, sm: 3 } }}>
-        {loading && processedFiles.length === 0 ? (
-          <LoadingState message="Cargando archivos procesados..." />
-        ) : error && processedFiles.length === 0 ? (
+      {loading && processedFiles.length === 0 ? (
+        <TableSkeleton rows={5} columns={4} />
+      ) : error && processedFiles.length === 0 ? (
+        <Paper sx={{ mx: { xs: 2, sm: 3 } }}>
           <ErrorState message={error} onRetry={fetchProcessed} />
-        ) : processedFiles.length === 0 ? (
+        </Paper>
+      ) : processedFiles.length === 0 ? (
+        <Paper sx={{ mx: { xs: 2, sm: 3 } }}>
           <EmptyState
             icon={HistoryIcon}
             title="No hay archivos procesados"
@@ -205,91 +221,121 @@ export default function ProcessedFiles() {
               </Button>
             }
           />
-        ) : (
-          <>
-            {error && processedFiles.length > 0 && (
-              <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2 }}>
-                <Alert
-                  severity="error"
-                  variant="outlined"
-                  action={
-                    <Button color="error" size="small" onClick={fetchProcessed}>
-                      Reintentar
-                    </Button>
-                  }
-                >
-                  No se pudo actualizar la lista: {error}
-                </Alert>
-              </Box>
-            )}
-            <Box
-              sx={{
-                px: { xs: 2, sm: 3 },
-                pt: 2,
-                pb: 1,
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 1,
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Chip
-                  label={`Todos (${processedFiles.length})`}
-                  color="primary"
-                  variant={statusFilter === null ? 'filled' : 'outlined'}
-                  onClick={() => setStatusFilter(null)}
-                />
-                <Chip
-                  label={`Exitosos (${statusCounts.EXITOSO})`}
-                  color="success"
-                  variant={statusFilter === 'EXITOSO' ? 'filled' : 'outlined'}
-                  onClick={() => setStatusFilter('EXITOSO')}
-                />
-                <Chip
-                  label={`Con errores (${statusCounts.ERRORES})`}
-                  color="warning"
-                  variant={statusFilter === 'ERRORES' ? 'filled' : 'outlined'}
-                  onClick={() => setStatusFilter('ERRORES')}
-                  sx={statusFilter !== 'ERRORES' ? { color: 'warning.dark', borderColor: 'warning.dark' } : undefined}
-                />
-                <Chip
-                  label={`Críticos (${statusCounts.CRITICO})`}
-                  color="error"
-                  variant={statusFilter === 'CRITICO' ? 'filled' : 'outlined'}
-                  onClick={() => setStatusFilter('CRITICO')}
-                />
-              </Box>
-              <TextField
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar por nombre de archivo..."
-                size="small"
-                fullWidth
-                sx={{ maxWidth: 320 }}
-                aria-label="Buscar archivos procesados"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+        </Paper>
+      ) : (
+        <Paper sx={{ mx: { xs: 2, sm: 3 } }}>
+          {error && processedFiles.length > 0 && (
+            <Box sx={{ px: { xs: 2, sm: 3 }, pt: 2 }}>
+              <Alert
+                severity="error"
+                variant="outlined"
+                action={
+                  <Button color="error" size="small" onClick={fetchProcessed}>
+                    Reintentar
+                  </Button>
+                }
+              >
+                No se pudo actualizar la lista: {error}
+              </Alert>
             </Box>
-            {isMobile ? (
-              visibleFiles.length === 0 ? (
-                <Box sx={{ p: 4, textAlign: 'center' }}>
-                  <Typography variant="body2" color="text.secondary">
-                    No se encontraron archivos con el término &quot;{searchQuery}&quot;
+          )}
+
+          <Box
+            sx={{
+              px: { xs: 2, sm: 3 },
+              pt: 2,
+              display: 'grid',
+              gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+              gap: 1.5,
+            }}
+            role="group"
+            aria-label="Filtrar por estado"
+          >
+            {STATUS_FILTERS.map((filter) => {
+              const count =
+                filter.key === null
+                  ? processedFiles.length
+                  : statusCounts[filter.key] ?? 0;
+              const selected = statusFilter === filter.key;
+              return (
+                <Button
+                  key={filter.key ?? 'todos'}
+                  onClick={() => setStatusFilter(filter.key)}
+                  aria-pressed={selected}
+                  disableRipple
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    justifyContent: 'flex-start',
+                    gap: 0.5,
+                    p: 1.5,
+                    minHeight: 72,
+                    borderRadius: 2,
+                    border: '1px solid',
+                    borderColor: selected ? 'primary.main' : 'divider',
+                    borderTop: '3px solid',
+                    borderTopColor: selected ? filter.rule : 'divider',
+                    backgroundColor: selected ? '#F4F8FD' : 'background.paper',
+                    color: 'text.primary',
+                    textTransform: 'none',
+                    '&:hover': {
+                      backgroundColor: selected ? '#EAF2FB' : 'rgba(22, 75, 125, 0.05)',
+                    },
+                  }}
+                >
+                  <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
+                    {count}
                   </Typography>
-                </Box>
-              ) : (
-                renderCards
-              )
+                  <Typography variant="label" sx={{ color: 'text.secondary' }}>
+                    {filter.label}
+                  </Typography>
+                </Button>
+              );
+            })}
+          </Box>
+
+          <Box
+            sx={{
+              px: { xs: 2, sm: 3 },
+              pt: 2,
+              pb: 1,
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 1,
+            }}
+          >
+            <TextField
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar por nombre de archivo..."
+              size="small"
+              fullWidth
+              sx={{ maxWidth: 340 }}
+              aria-label="Buscar archivos procesados"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+
+          {isMobile ? (
+            visibleFiles.length === 0 ? (
+              <Box sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="body2" color="text.secondary">
+                  No se encontraron archivos con los filtros seleccionados
+                </Typography>
+              </Box>
             ) : (
-              <TableContainer>
+              renderCards
+            )
+          ) : (
+            <TableContainer>
               <Table aria-label="Tabla de archivos procesados">
                 <TableHead>
                   <TableRow>
@@ -308,9 +354,9 @@ export default function ProcessedFiles() {
                   {visibleFiles.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={5} align="center" sx={{ py: 5 }}>
-        <Typography variant="body2" color="text.secondary">
-          No se encontraron archivos con el término &quot;{searchQuery}&quot;
-        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          No se encontraron archivos con los filtros seleccionados
+                        </Typography>
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -323,7 +369,7 @@ export default function ProcessedFiles() {
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
                             <DescriptionIcon
-                              sx={{ color: 'primary.light', fontSize: 20, verticalAlign: 'middle', mr: 0.5 }}
+                              sx={{ color: 'primary.light', fontSize: 20, verticalAlign: 'middle', mr: 1 }}
                             />
                             {file.filename}
                           </Typography>
@@ -334,7 +380,7 @@ export default function ProcessedFiles() {
                           </Typography>
                         </TableCell>
                         <TableCell>
-                          <ResultCell
+                          <ResultLine
                             total={file.totalTransactions}
                             processed={file.processedCount}
                             rejected={file.rejectedCount}
@@ -361,10 +407,9 @@ export default function ProcessedFiles() {
                 </TableBody>
               </Table>
             </TableContainer>
-            )}
-          </>
-        )}
-      </Paper>
+          )}
+        </Paper>
+      )}
     </Box>
   );
 }

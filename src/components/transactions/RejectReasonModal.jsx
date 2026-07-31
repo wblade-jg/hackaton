@@ -25,7 +25,19 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
       aria-labelledby="rejection-reason-title"
     >
       <DialogTitle id="rejection-reason-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <ErrorOutlineIcon color="error" />
+        <Box
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            backgroundColor: '#FDF3F3',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ErrorOutlineIcon color="error" />
+        </Box>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Detalles del Rechazo
         </Typography>
@@ -34,7 +46,7 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
       <DialogContent dividers>
         <Box display="flex" flexDirection="column" gap={2}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700 }}>
+            <Typography variant="label" color="text.secondary">
               Estado
             </Typography>
             <StatusBadge status={transaction.status} />
@@ -43,7 +55,7 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
           <Divider />
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>
+            <Typography variant="label" color="text.secondary" gutterBottom>
               Número de Cuenta
             </Typography>
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -52,14 +64,14 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>
+            <Typography variant="label" color="text.secondary" gutterBottom>
               Fecha de Transacción
             </Typography>
             <Typography variant="body1">{transaction.date || '-'}</Typography>
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>
+            <Typography variant="label" color="text.secondary" gutterBottom>
               Monto Original
             </Typography>
             <Typography variant="body1" sx={{ fontWeight: 600 }}>
@@ -72,13 +84,15 @@ export default function RejectReasonModal({ open, transaction, onClose }) {
           <Box
             sx={{
               p: 2,
-              backgroundColor: 'rgba(211, 47, 47, 0.06)',
+              backgroundColor: '#FDF3F3',
               borderRadius: 2,
               border: '1px solid',
               borderColor: 'error.light',
+              borderTop: '3px solid',
+              borderTopColor: 'error.main',
             }}
           >
-            <Typography variant="body2" color="error.main" sx={{ fontWeight: 700 }} gutterBottom>
+            <Typography variant="label" color="error.main" gutterBottom>
               Motivo de Rechazo
             </Typography>
             <Typography variant="body2" color="text.primary">

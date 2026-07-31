@@ -72,7 +72,19 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
       aria-labelledby="edit-amount-title"
     >
       <DialogTitle id="edit-amount-title" sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-        <EditIcon color="primary" />
+        <Box
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            backgroundColor: '#F4F8FD',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <EditIcon color="primary" />
+        </Box>
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
           Editar Monto y Reprocesar
         </Typography>
@@ -83,10 +95,12 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
           <Box
             sx={{
               p: 2,
-              backgroundColor: 'rgba(237, 108, 2, 0.06)',
+              backgroundColor: '#FFF9F0',
               borderRadius: 2,
               border: '1px solid',
-              borderColor: 'warning.light',
+              borderColor: '#E8930C',
+              borderTop: '3px solid',
+              borderTopColor: '#B36500',
             }}
           >
             <Typography variant="body2" color="warning.dark" sx={{ fontWeight: 500 }}>
@@ -95,7 +109,7 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>
+            <Typography variant="label" color="text.secondary" gutterBottom>
               Nro Cuenta
             </Typography>
             <Typography variant="body1">
@@ -104,14 +118,14 @@ export default function EditAmountModal({ open, transaction, onClose, onSave }) 
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>
+            <Typography variant="label" color="text.secondary" gutterBottom>
               Fecha
             </Typography>
             <Typography variant="body1">{transaction.date}</Typography>
           </Box>
 
           <Box>
-            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontWeight: 700 }}>
+            <Typography variant="label" color="text.secondary" gutterBottom>
               Motivo de Rechazo
             </Typography>
             <Typography variant="body2" color="error.main">
