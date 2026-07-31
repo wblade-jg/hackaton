@@ -2,6 +2,7 @@ using hackaton.Common;
 using hackaton.Common.Validation;
 using hackaton.Infrastructure.Persistence;
 using hackaton.Infrastructure.Persistence.Entities;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace hackaton.Features.Transactions;
@@ -10,10 +11,13 @@ public class UpdateTransactionEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("/transactions/{id:int}", HandleAsync);
+        app.MapPost("/transactions/{id:int}", HandleAsync)
+           .WithTags("Transacciones")
+           .WithSummary("Corrige el monto de una transacción rechazada")
+           .WithDescription("Modifica el monto de una transacción rechazada por motivo de monto y re-ejecuta las validaciones de negocio para actualizar su estado.");
     }
 
-    private static async Task<IResult> HandleAsync(
+    private static async Task<Results<Ok<TransaccionResponse>, BadRequest<ApiError>, NotFound<ApiError>>> HandleAsync(
         int id,
         UpdateMontoRequest request,
         AppDbContext db,
@@ -24,10 +28,10 @@ public class UpdateTransactionEndpoint : IEndpoint
             .FirstOrDefaultAsync(t => t.Id == id);
 
         if (transaccion is null)
-            return Results.NotFound(new { Message = $"No se encontró la transacción con ID {id}" });
+            return TypedResults.NotFound(new ApiError($"No se encontró la transacción con ID {id}"));
 
         if (!transaccion.EsEditable)
-            return Results.BadRequest(new { Message = "Solo se puede ajustar el monto de una transacción rechazada por motivo de monto." });
+            return TypedResults.BadRequest(new ApiError("Solo se puede ajustar el monto de una transacción rechazada por motivo de monto."));
 
         transaccion.Monto = request.Monto;
 
@@ -45,7 +49,7 @@ public class UpdateTransactionEndpoint : IEndpoint
 
         await db.SaveChangesAsync();
 
-        return Results.Ok(new TransaccionResponse(
+        return TypedResults.Ok(new TransaccionResponse(
             transaccion.Id,
             transaccion.Cuenta,
             transaccion.Monto,
@@ -55,15 +59,4 @@ public class UpdateTransactionEndpoint : IEndpoint
             transaccion.EsEditable
         ));
     }
-
-    private record UpdateMontoRequest(decimal Monto);
-
-    private record TransaccionResponse(
-        int Id,
-        string Cuenta,
-        decimal Monto,
-        DateTime Fecha,
-        string Estado,
-        string? MotivoRechazo,
-        bool EsEditable);
 }

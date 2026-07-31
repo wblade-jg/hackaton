@@ -2,6 +2,7 @@ using hackaton.Common;
 using hackaton.Common.Validation;
 using hackaton.Infrastructure.Persistence;
 using hackaton.Infrastructure.Persistence.Entities;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace hackaton.Features.Files;
@@ -10,10 +11,13 @@ public class GetFileByIdEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("/files/{id:int}", HandleAsync);
+        app.MapGet("/files/{id:int}", HandleAsync)
+           .WithTags("Archivos")
+           .WithSummary("Obtiene el detalle de un archivo procesado")
+           .WithDescription("Devuelve el archivo junto con todas sus transacciones, incluidas las rechazadas y sus motivos de rechazo.");
     }
 
-    private static async Task<IResult> HandleAsync(int id, AppDbContext db)
+    private static async Task<Results<Ok<FileDetailResponse>, NotFound<ApiError>>> HandleAsync(int id, AppDbContext db)
     {
         var result = await db.ArchivosProcesados
             .AsNoTracking()
@@ -28,7 +32,7 @@ public class GetFileByIdEndpoint : IEndpoint
                 a.Rechazados,
                 a.Transacciones
                     .OrderBy(t => t.Id)
-                    .Select(t => new TransaccionResponse(
+                    .Select(t => new TransaccionDetailResponse(
                         t.Id,
                         t.Cuenta,
                         t.Monto,
@@ -43,27 +47,7 @@ public class GetFileByIdEndpoint : IEndpoint
             .SingleOrDefaultAsync();
 
         return result is null
-            ? Results.NotFound(new { Message = $"No se encontró el archivo con ID {id}" })
-            : Results.Ok(result);
+            ? TypedResults.NotFound(new ApiError($"No se encontró el archivo con ID {id}"))
+            : TypedResults.Ok(result);
     }
-
-    private record FileDetailResponse(
-        int Id,
-        string NombreArchivo,
-        DateTime FechaProceso,
-        string Estado,
-        int TotalRegistros,
-        int Procesados,
-        int Rechazados,
-        List<TransaccionResponse> Transacciones
-    );
-
-    private record TransaccionResponse(
-        int Id,
-        string Cuenta,
-        decimal Monto,
-        DateTime Fecha,
-        string Estado,
-        string? MotivoRechazo,
-        bool EsEditable);
 }

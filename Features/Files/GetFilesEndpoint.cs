@@ -1,5 +1,6 @@
 using hackaton.Common;
 using hackaton.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace hackaton.Features.Files;
@@ -8,10 +9,13 @@ public class GetFilesEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("/files", HandleAsync);
+        app.MapGet("/files", HandleAsync)
+           .WithTags("Archivos")
+           .WithSummary("Lista los archivos procesados")
+           .WithDescription("Devuelve el historial de archivos procesados, ordenado por fecha de proceso descendente.");
     }
 
-    private static async Task<IResult> HandleAsync(AppDbContext db)
+    private static async Task<Ok<List<ArchivoProcesadoResponse>>> HandleAsync(AppDbContext db)
     {
         var files = await db.ArchivosProcesados
             .OrderByDescending(a => a.FechaProceso)
@@ -25,6 +29,6 @@ public class GetFilesEndpoint : IEndpoint
                 a.Rechazados))
             .ToListAsync();
 
-        return Results.Ok(files);
+        return TypedResults.Ok(files);
     }
 }
