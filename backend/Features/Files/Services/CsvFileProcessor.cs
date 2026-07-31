@@ -9,12 +9,7 @@ using System.Text;
 
 namespace hackaton.Features.Files.Services;
 
-/// <summary>
-/// Processes a CSV file in two streaming passes to avoid loading all rows into memory at once.
-/// Pass 1: stream the file to collect candidate duplicate keys (minimal memory footprint).
-/// Pass 2: stream the file again, validate each row using the pre-loaded DB duplicate set,
-///         and persist only the resulting <see cref="Transaccion"/> entities.
-/// </summary>
+
 public class CsvFileProcessor
 {
     private readonly TransactionValidator _validator;
@@ -116,9 +111,6 @@ public class CsvFileProcessor
         using var reader = OpenReader(fullPath);
         using var csv = BuildCsvReader(reader);
 
-        if (!csv.ReadHeader())
-            return (keys, count);
-
         while (await csv.ReadAsync())
         {
             count++;
@@ -146,9 +138,6 @@ public class CsvFileProcessor
     {
         using var reader = OpenReader(fullPath);
         using var csv = BuildCsvReader(reader);
-
-        if (!csv.ReadHeader())
-            yield break;
 
         var index = 0;
         while (await csv.ReadAsync())

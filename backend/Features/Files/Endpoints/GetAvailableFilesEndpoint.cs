@@ -59,10 +59,6 @@ public class GetAvailableFilesEndpoint : IEndpoint
         return TypedResults.Ok(available);
     }
 
-    /// <summary>
-    /// Returns the file size in bytes and the number of data rows (header excluded).
-    /// Uses buffered line counting to avoid loading the entire file into memory.
-    /// </summary>
     private static (long SizeBytes, int TotalFilas) GetFileMetadata(string fullPath)
     {
         try
@@ -72,7 +68,6 @@ public class GetAvailableFilesEndpoint : IEndpoint
 
             var sizeBytes = info.Length;
 
-            // Count lines efficiently using a buffer; subtract 1 for the header row.
             var lineCount = 0;
             using var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 65536);
             using var reader = new StreamReader(stream);
@@ -80,7 +75,6 @@ public class GetAvailableFilesEndpoint : IEndpoint
             while (reader.ReadLine() is not null)
                 lineCount++;
 
-            // lineCount includes the header; data rows = lineCount - 1 (minimum 0).
             var dataRows = Math.Max(0, lineCount - 1);
 
             return (sizeBytes, dataRows);
